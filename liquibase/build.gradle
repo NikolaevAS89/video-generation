@@ -1,0 +1,35 @@
+plugins {
+    id 'org.liquibase.gradle' version '2.2.0'
+}
+
+apply plugin: "org.liquibase.gradle"
+
+ext {
+    database = new Properties().with {
+        load(file("db.properties").newReader())
+        it
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    liquibaseRuntime 'org.liquibase:liquibase-core:4.20.0'
+    liquibaseRuntime 'org.postgresql:postgresql:42.5.4'
+    liquibaseRuntime 'info.picocli:picocli:4.7.3'
+}
+
+liquibase {
+    activities {
+        security {
+            changeLogFile "db/changelog.xml"
+            url database.getProperty("dbUrl")
+            username database.getProperty("dbUsername")
+            password database.getProperty("dbPassword")
+            driver "org.postgresql.Driver"
+            logLevel "info"
+        }
+    }
+}
