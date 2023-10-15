@@ -54,7 +54,7 @@ public class FrontendController {
     // отправить размеченный текст POST /audio/{uuid}/text [n1, n2, .... ]
     @PostMapping(value = "/audio/{uuid}/text")
     public ResponseEntity<Void> setText(@PathVariable("uuid") String uuid,
-                                        @RequestBody Publisher<List<String>> chose) {
+                                        @RequestBody Publisher<List<Integer>> chose) {
         return ResponseEntity.ok()
                 .build(); // TODO
     }
@@ -125,7 +125,8 @@ public class FrontendController {
     @ResponseBody
     public ResponseEntity<StreamingResponseBody> getProcessedToPlay(@PathVariable("uuid") String uuid,
                                                                     @RequestHeader(value = "Range", required = false)
-                                                                    String rangeHeader) throws Exception {
+                                                                    String rangeHeader,
+                                                                    @RequestBody Publisher<List<Integer>> chose) throws Exception {
         StreamingResponseBody responseStream;
         final HttpHeaders headers = new HttpHeaders();
         headers.add("Content-Type", "video/mp4");
