@@ -19,7 +19,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
@@ -30,6 +29,8 @@ import java.util.UUID;
 @RestController
 @CrossOrigin
 public class FrontendController {
+    private static String MOCK_VIDEO_FILE = "/storage/example.mp4";
+
     // загрузить видео POST /video/upload responce {"uuid": "......"}
     @PostMapping(value = "/videos/upload")
     public Mono<ResponseEntity<Mono<UUID>>> uploadFile(@RequestPart("file") Mono<FilePart> filePartMono) {
@@ -37,7 +38,7 @@ public class FrontendController {
                 .flatMap(filePart -> {
                     UUID uuid = UUID.randomUUID();
                     String filename = filePart.filename();
-                    return filePart.transferTo(new File(filename)).then(Mono.just(uuid));
+                    return filePart.transferTo(new File("/storage/" + filename)).then(Mono.just(uuid));
                 })
                 .map(uuid -> ResponseEntity.ok().body(Mono.just(uuid)));
     }
@@ -68,7 +69,7 @@ public class FrontendController {
         headers.add("Cache-Control", "no-cache, no-store, must-revalidate");
         headers.add("Pragma", "no-cache");
         headers.add("Expires", "0");
-        InputStreamResource isr = new InputStreamResource(new FileInputStream("example.mp4")); // TODO
+        InputStreamResource isr = new InputStreamResource(new FileInputStream(MOCK_VIDEO_FILE)); // TODO
         return ResponseEntity.ok()
                 .headers(headers)
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
@@ -86,13 +87,13 @@ public class FrontendController {
         headers.add("Content-Type", "video/mp4");
         headers.add("Accept-Ranges", "bytes");
         headers.set("Content-Transfer-Encoding", "binary");
-        long contentLength = Files.size(new File("example.mp4").toPath());
+        long contentLength = Files.size(new File(MOCK_VIDEO_FILE).toPath());
         if (rangeHeader == null) {
             String range = "bytes 0-" + (contentLength - 1L) + "/" + contentLength;
             headers.add("Content-Length", String.valueOf(contentLength));
             headers.add("Content-Range", range);
             responseStream = os -> {
-                try (InputStream is = new FileInputStream("example.mp4")) {
+                try (InputStream is = new FileInputStream(MOCK_VIDEO_FILE)) {
                     IOUtils.transferTo(is, os, 0L, contentLength);
                 } catch (Exception e) {
                     throw new RuntimeException(e);
@@ -110,7 +111,7 @@ public class FrontendController {
             headers.add("Content-Length", String.valueOf(rangeEnd - rangeStart));
             headers.add("Content-Range", range);
             responseStream = os -> {
-                try (InputStream is = new FileInputStream("example.mp4")) {
+                try (InputStream is = new FileInputStream(MOCK_VIDEO_FILE)) {
                     IOUtils.transferTo(is, os, rangeStart, rangeEnd);
                 } catch (Exception e) {
                     throw new RuntimeException(e);
@@ -132,13 +133,13 @@ public class FrontendController {
         headers.add("Content-Type", "video/mp4");
         headers.add("Accept-Ranges", "bytes");
         headers.set("Content-Transfer-Encoding", "binary");
-        long contentLength = Files.size(new File("example.mp4").toPath());
+        long contentLength = Files.size(new File(MOCK_VIDEO_FILE).toPath());
         if (rangeHeader == null) {
             String range = "bytes 0-" + (contentLength - 1L) + "/" + contentLength;
             headers.add("Content-Length", String.valueOf(contentLength));
             headers.add("Content-Range", range);
             responseStream = os -> {
-                try (InputStream is = new FileInputStream("example.mp4")) {
+                try (InputStream is = new FileInputStream(MOCK_VIDEO_FILE)) {
                     IOUtils.transferTo(is, os, 0L, contentLength);
                 } catch (Exception e) {
                     throw new RuntimeException(e);
@@ -156,7 +157,7 @@ public class FrontendController {
             headers.add("Content-Length", String.valueOf(rangeEnd - rangeStart));
             headers.add("Content-Range", range);
             responseStream = os -> {
-                try (InputStream is = new FileInputStream("example.mp4")) {
+                try (InputStream is = new FileInputStream(MOCK_VIDEO_FILE)) {
                     IOUtils.transferTo(is, os, rangeStart, rangeEnd);
                 } catch (Exception e) {
                     throw new RuntimeException(e);

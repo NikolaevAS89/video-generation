@@ -1,5 +1,15 @@
 version: "3.8"
 services:
+  server:
+    build: backend/
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./volumes/server:/storage
+    depends_on:
+      - db
+    links:
+      - "db:db"
   db:
     image: postgres:14.1-alpine
     restart: always
