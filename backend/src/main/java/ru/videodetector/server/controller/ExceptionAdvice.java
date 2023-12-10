@@ -13,7 +13,7 @@ import reactor.core.publisher.Mono;
 @ControllerAdvice
 public class ExceptionAdvice extends ResponseEntityExceptionHandler {
 
-    @ExceptionHandler(Exception.class)
+    @ExceptionHandler(value = {Exception.class})
     public ResponseEntity<Mono<String>> handleException(Exception e) {
         return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(Mono.just(e.getMessage()));
     }

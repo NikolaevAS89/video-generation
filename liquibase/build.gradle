@@ -25,9 +25,9 @@ liquibase {
     activities {
         security {
             changeLogFile "db/changelog.xml"
-            url database.getProperty("dbUrl")
-            username database.getProperty("dbUsername")
-            password database.getProperty("dbPassword")
+            url "jdbc:postgresql://db:5432/" + System.getenv('$POSTGRES_DB')
+            username System.getenv('POSTGRES_USER')
+            password System.getenv('POSTGRES_PASSWORD')
             driver "org.postgresql.Driver"
             logLevel "info"
         }

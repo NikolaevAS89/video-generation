@@ -1,0 +1,53 @@
+server:
+  port: 8090
+  forward-headers-strategy: framework
+
+urls:
+  template:
+    url: http://server:8080
+  storage:
+    url: http://server:8080
+  processed:
+    url: http://server:8080
+  transcript:
+    url: http://server:8080
+
+logging:
+  level:
+    reactor:
+      netty: INFO
+    org:
+      springframework:
+        cloud:
+          gateway: DEBUG
+
+spring:
+  application:
+    name: video-generator-gateway
+  cloud:
+    gateway:
+      httpclient:
+        connect-timeout: 5000
+        response-timeout: 60000
+        pool:
+          max-idle-time: 180s
+      routes:
+        - id: storage
+          uri: ${urls.storage.url}
+          predicates:
+            - Path=/storage/**
+        - id: template
+          uri: ${urls.template.url}
+          predicates:
+            - Path=/template/**
+        - id: processed
+          uri: ${urls.processed.url}
+          predicates:
+            - Path=/processed/**
+        - id: transcript
+          uri: ${urls.transcript.url}
+          predicates:
+            - Path=/transcript/**
+  main:
+    banner-mode: "off"
+    web-application-type: reactive

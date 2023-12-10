@@ -1,34 +1,66 @@
 version: "3.8"
 services:
+  gateway:
+    build: gateway/
+    ports:
+      - 8090:8090
+    depends_on:
+      - server
   server:
     build: backend/
     ports:
-      - "8080:8080"
+      - 8080:8080
     volumes:
       - ./volumes/server:/storage
     depends_on:
       - db
-    links:
-      - "db:db"
+      - liquibase
+      - rabbitmq
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS}
+  transcription:
+    build: audio-transcript/
+    volumes:
+      - ./volumes/server:/storage
+    depends_on:
+      - rabbitmq
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS}
   db:
     image: postgres:14.1-alpine
     restart: always
     environment:
-      - POSTGRES_DB=videodetector
-      - POSTGRES_USER=videodetector
-      - POSTGRES_PASSWORD=123456
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     volumes:
       - ./volumes/db:/var/lib/postgresql/data
     ports:
       - 5432:5432
+  liquibase:
+    build: liquibase/
+    depends_on:
+      - db
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
   rabbitmq:
     image: rabbitmq:3.12.6-management-alpine
     hostname: rabbitmq
     restart: always
     environment:
-      - RABBITMQ_DEFAULT_USER=videodetector
-      - RABBITMQ_DEFAULT_PASS=123456
-      - RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS=-rabbit log_levels [{connection,error},{default,error}] disk_free_limit 2147483648
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS}
+      - RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS=${RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS}
     volumes:
       - ./volumes/rabbitmq:/var/lib/rabbitmq
     ports:
