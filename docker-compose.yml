@@ -27,6 +27,8 @@ services:
     volumes:
       - ./volumes/server:/storage
     depends_on:
+      - db
+      - liquibase
       - rabbitmq
     environment:
       - POSTGRES_DB=${POSTGRES_DB}
@@ -34,6 +36,17 @@ services:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER}
       - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS}
+  callback:
+    build: caller-log/
+    ports:
+      - 8091:8091
+    depends_on:
+      - db
+      - liquibase
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
   db:
     image: postgres:14.1-alpine
     restart: always

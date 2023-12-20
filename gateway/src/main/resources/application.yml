@@ -11,6 +11,8 @@ urls:
     url: http://server:8080
   transcript:
     url: http://server:8080
+  callback:
+    url: http://callback:8091
 
 logging:
   level:
@@ -48,6 +50,10 @@ spring:
           uri: ${urls.transcript.url}
           predicates:
             - Path=/transcript/**
+        - id: callback
+          uri: ${urls.callback.url}
+          predicates:
+            - Path=/callback/**
   main:
     banner-mode: "off"
     web-application-type: reactive
