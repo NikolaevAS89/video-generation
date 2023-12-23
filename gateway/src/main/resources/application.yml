@@ -14,6 +14,10 @@ urls:
   callback:
     url: http://callback:8091
 
+basic-auth:
+  name: operator
+  password: ${OPERATOR_PASSWORD}
+
 logging:
   level:
     reactor:

@@ -6,6 +6,8 @@ services:
       - 8090:8090
     depends_on:
       - server
+    environment:
+      - OPERATOR_PASSWORD=${OPERATOR_PASSWORD}
   server:
     build: backend/
     ports:
@@ -79,3 +81,12 @@ services:
     ports:
       - 15672:15672
       - 5672:5672
+  redis:
+    image: redis:7.2
+    restart: always
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+    volumes:
+      - ./volumes/redis:/var/lib/redis/data
+    ports:
+      - 6379:6379
