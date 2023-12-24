@@ -16,6 +16,7 @@ services:
       - db
       - liquibase
       - rabbitmq
+      - ml
     environment:
       - POSTGRES_DB=${POSTGRES_DB}
       - POSTGRES_USER=${POSTGRES_USER}
@@ -26,16 +27,25 @@ services:
     build: audio-transcript/
     volumes:
       - ./volumes/server:/storage
+    command: tail -f /dev/null
     depends_on:
       - db
       - liquibase
       - rabbitmq
+      - ml
     environment:
       - POSTGRES_DB=${POSTGRES_DB}
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER}
       - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS}
+    deploy:
+      resources:
+        reservations:
+          devices:
+          - driver: nvidia
+            capabilities: [gpu]
+            count: all
   callback:
     build: caller-log/
     ports:
@@ -79,3 +89,16 @@ services:
     ports:
       - 15672:15672
       - 5672:5672
+  ml:
+    image: nvidia/cuda:11.8.0-cudnn8-runtime-ubuntu22.04
+    shm_size: "8gb"
+    command: nvidia-smi
+    volumes:
+      - ./volumes/server:/storage
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]

@@ -1,8 +1,11 @@
 import json
 import time
-
+import os
+import sys
 import pika
 from pika.exchange_type import ExchangeType
+from moviepy import VideoFileClip
+from faster_whisper import WhisperModel
 
 credentials = pika.credentials.PlainCredentials(username='videodetector',
                                                 password='123456')
@@ -23,17 +26,42 @@ def callback(ch, method, properties, body):
     print(f" [x] Properties {str(properties)}")
 
     # TODO place code here.
-    time.sleep(10)
-    # TODO delete example
-    answer = {
-        "uuid": bytes(body).decode("UTF-8"),
-        "words": [{
-            "word": "Свобода",
-            "start": "00:00:01",
-            "end": "00:00:03"
-        }]
-    }
-    #
+    current_directory = os.path.dirname(os.path.realpath(__file__))
+    parent_directory = os.path.dirname(current_directory)
+    grandparent_directory = os.path.dirname(parent_directory)
+    if grandparent_directory not in sys.path:
+        sys.path.append(grandparent_directory)
+
+    print(f" [x] Received   {str(body)}")
+    print(f" [x] Method     {str(method)}")
+    print(f" [x] Properties {str(properties)}")
+
+    # TODO place code here.
+    video = body.name
+    path_to_vid_dir = current_directory+"/storage/"+str(body.id)
+    path_to_original_vid = current_directory+"/storage/"+str(body.id)+"/"+video
+    print(path_to_original_vid)
+    print(video)
+    video_clip = VideoFileClip(rf"{path_to_original_vid}")
+    audio_clip = video_clip.audio
+    audio_clip.write_audiofile(path_to_vid_dir+ "/"+ video+'_audio.mp3')
+    video_clip.without_audio().write_videofile(path_to_vid_dir+ "/"+video+'_mute.mp4')
+    model_size = "medium"
+    model = WhisperModel(model_size, device="cuda", compute_type="float32")
+    segments, info = model.transcribe(path_to_vid_dir+ "/"+ video+'_audio.mp3', beam_size=5, word_timestamps=True)
+    answer = []
+    
+    for segment in segments:
+        for word in segment.words:
+            segment_subs = {
+            "uuid": bytes(body.id).decode("UTF-8"),
+            "words": [{
+                "word": word.word,
+                "start": word.start,
+                "end": word.end
+            }]}
+            answer.append(segment_subs)
+    
     ch.basic_publish(exchange=exchange_name,
                      routing_key=routing_key_out,
                      body=json.dumps(answer).encode("UTF-8"))
