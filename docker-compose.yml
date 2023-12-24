@@ -27,7 +27,6 @@ services:
     build: audio-transcript/
     volumes:
       - ./volumes/server:/storage
-    command: tail -f /dev/null
     depends_on:
       - db
       - liquibase
