@@ -8,20 +8,20 @@ from moviepy.editor import VideoFileClip
 from faster_whisper import WhisperModel
 
 # RambbitMQ Settings
-username = os.getenv("RABBITMQ_DEFAULT_USER")
-password = os.getenv("RABBITMQ_DEFAULT_PASS")
-rabbit_host = os.getenv("RABBITMQ_DEFAULT_HOST")
+username = str(os.getenv("RABBITMQ_DEFAULT_USER"))
+password = str(os.getenv("RABBITMQ_DEFAULT_PASS"))
+rabbit_host = str(os.getenv("RABBITMQ_DEFAULT_HOST"))
 
-queue_in_name = os.getenv("QUEUE_IN_NAME")
-queue_out_name = os.getenv("QUEUE_OUT_NAME")
-exchange_name = os.getenv("EXCHANGE_NAME")
-routing_key_in = os.getenv("ROUTUNG_KEY_IN")
-routing_key_out = os.getenv("ROUTING_KEY_OUT")
+queue_in_name = str(os.getenv("QUEUE_IN_NAME"))
+queue_out_name = str(os.getenv("QUEUE_OUT_NAME"))
+exchange_name = str(os.getenv("EXCHANGE_NAME"))
+routing_key_in = str(os.getenv("ROUTUNG_KEY_IN"))
+routing_key_out = str(os.getenv("ROUTING_KEY_OUT"))
 
 # Faster-Whisper Settings
 model_size = str(os.getenv("MODEL_SIZE"))
 device = str(os.getenv("DEVICE"))
-computer_type = str(os.getenv("COMPUTE_TYPE"))
+compute_type = str(os.getenv("COMPUTE_TYPE"))
 beam_size = int(os.getenv("BEAM_SIZE"))
 
 credentials = pika.credentials.PlainCredentials(username=username,
@@ -45,8 +45,8 @@ class StorageService:
         audio_clip.write_audiofile(self.__video_path + "audio.mp3")
         video_clip.without_audio().write_videofile(self.__video_path +"video.mp4")
     def generate_subs(self, uuid):
-        model = WhisperModel(model_size, device="cuda", compute_type="float32")
-        segments, info = model.transcribe(self.__video_path + "audio.mp3", beam_size=5, word_timestamps=True)
+        model = WhisperModel(model_size, device=device, compute_type=compute_type)
+        segments, info = model.transcribe(self.__video_path + "audio.mp3", beam_size=beam_size, word_timestamps=True)
         for segment in segments:
             for word in segment.words:
                 segment_subs = {
@@ -68,7 +68,7 @@ def callback(ch, method, properties, body):
     grandparent_directory = os.path.dirname(parent_directory)
     if grandparent_directory not in sys.path:
         sys.path.append(grandparent_directory)
-    uuid = str(body)
+    uuid = body.decode("utf-8")
 
     print(f" [x] Received   {str(body)}")
     print(f" [x] Method     {str(method)}")
