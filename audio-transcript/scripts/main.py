@@ -4,8 +4,7 @@ import os
 import sys
 import pika
 from pika.exchange_type import ExchangeType
-from moviepy.editor import VideoFileClip
-from faster_whisper import WhisperModel
+from storage_lib import StorageService, StorageManipulatorService
 
 # RambbitMQ Settings
 username = str(os.getenv("RABBITMQ_DEFAULT_USER"))
@@ -18,74 +17,44 @@ exchange_name = str(os.getenv("EXCHANGE_NAME"))
 routing_key_in = str(os.getenv("ROUTUNG_KEY_IN"))
 routing_key_out = str(os.getenv("ROUTING_KEY_OUT"))
 
+
 # Faster-Whisper Settings
 model_size = str(os.getenv("MODEL_SIZE"))
 device = str(os.getenv("DEVICE"))
 compute_type = str(os.getenv("COMPUTE_TYPE"))
 beam_size = int(os.getenv("BEAM_SIZE"))
 
+
+# Directories
+current_directory = os.path.dirname(os.path.realpath(__file__))
+parent_directory = os.path.dirname(current_directory)
+grandparent_directory = os.path.dirname(parent_directory)
+if grandparent_directory not in sys.path:
+    sys.path.append(grandparent_directory)
+
+
 credentials = pika.credentials.PlainCredentials(username=username,
                                                 password=password)
 
-connection = pika.BlockingConnection(pika.ConnectionParameters(host=rabbit_host,
+connection = pika.BlockingConnection(pika.ConnectionParameters(host="rabbitmq",
                                                                credentials=credentials))
 
-
-class StorageService:
-    def __init__(self, path):
-        self.__path = path
-        self.answer = []
-    def get_video_path(self, uuid):
-        self.__video_path = self.__path + "/storage/" + uuid + "/"
-    def get_source(self):
-        self.__source = self.__video_path + "source"
-    def split_source(self):
-        video_clip = VideoFileClip(rf"{self.__source}")
-        audio_clip = video_clip.audio
-        audio_clip.write_audiofile(self.__video_path + "audio.mp3")
-        video_clip.without_audio().write_videofile(self.__video_path +"video.mp4")
-    def generate_subs(self, uuid):
-        model = WhisperModel(model_size, device=device, compute_type=compute_type)
-        segments, info = model.transcribe(self.__video_path + "audio.mp3", beam_size=beam_size, word_timestamps=True)
-        for segment in segments:
-            for word in segment.words:
-                segment_subs = {
-                "uuid": bytes(uuid).decode("UTF-8"),
-                "words": [{
-                    "word": word.word,
-                    "start": word.start,
-                    "end": word.end
-                }]}
-                self.answer.append(segment_subs)
+storage = StorageService(path=grandparent_directory)
+manipulator = StorageManipulatorService()
 
 def callback(ch, method, properties, body):
-    print(f" [x] Received   {str(body)}")
-    print(f" [x] Method     {str(method)}")
-    print(f" [x] Properties {str(properties)}")
 
-    current_directory = os.path.dirname(os.path.realpath(__file__))
-    parent_directory = os.path.dirname(current_directory)
-    grandparent_directory = os.path.dirname(parent_directory)
-    if grandparent_directory not in sys.path:
-        sys.path.append(grandparent_directory)
     uuid = body.decode("utf-8")
 
-    print(f" [x] Received   {str(body)}")
-    print(f" [x] Method     {str(method)}")
-    print(f" [x] Properties {str(properties)}")
-
-    # TODO place code here.
-    storage = StorageService(path=grandparent_directory)
     storage.get_video_path(uuid=uuid)
-    storage.get_source()
-    storage.split_source()
-    storage.generate_subs(uuid=uuid)
+    source = storage.get_source()
+    manipulator.split_source(source)
+    manipulator.generate_subs(source_path = source, uuid=uuid, model_size=model_size, device=device, compute_type=compute_type, beam_size=beam_size)
 
     ch.basic_publish(exchange=exchange_name,
                      routing_key=routing_key_out,
-                     body=json.dumps(storage.answer).encode("UTF-8"))
-    print(storage.answer)
-
+                     body=json.dumps(manipulator.answer).encode("UTF-8"))
+    
 if __name__ == '__main__':
     channel = connection.channel()
     channel.exchange_declare(exchange=exchange_name,

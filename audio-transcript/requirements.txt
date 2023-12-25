@@ -1,6 +1,6 @@
 #CUDA Dependencies
-nvidia-cublas-cu11
-nvidia-cudnn-cu11
+#nvidia-cublas-cu11
+#nvidia-cudnn-cu11
 
 # Modules
 moviepy==1.0.3
