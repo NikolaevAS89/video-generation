@@ -34,7 +34,7 @@ class SecurityConfiguration {
     @Bean
     @Order(Ordered.HIGHEST_PRECEDENCE)
     public SecurityWebFilterChain defaultCallbackSecurityFilterChain(ServerHttpSecurity http) {
-        http.securityMatcher(new PathPatternParserServerWebExchangeMatcher("/callback", HttpMethod.GET))
+        http.securityMatcher(new PathPatternParserServerWebExchangeMatcher("/callback", HttpMethod.POST))
                 .authorizeExchange(exchanges -> exchanges
                         .anyExchange()
                         .authenticated())

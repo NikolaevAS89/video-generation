@@ -12,6 +12,8 @@ import ru.timestop.video.generator.gateway.model.BasicAuthProperties;
 @EnableConfigurationProperties(BasicAuthProperties.class)
 public class Application {
     /**
+        https://cloud.google.com/docs/authentication/provide-credentials-adc#local-dev
+        https://cloud.google.com/iam/docs/keys-create-delete#iam-service-account-keys-create-java
         TODO add recapcha
         https://developers.google.com/recaptcha/docs/verify
         https://www.google.com/recaptcha/admin/site/691258300
