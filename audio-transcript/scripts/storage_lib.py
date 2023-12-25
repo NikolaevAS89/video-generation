@@ -50,7 +50,7 @@ class StorageManipulatorService:
         video_path = self.storage.get_video_path(uuid)
 
         model = WhisperModel(self.__model_size, device=self.__device, compute_type=self.__compute_type)
-        segments, info = model.transcribe(video_path + "audio", beam_size=self.__beam_size, word_timestamps=True)
+        segments, info = model.transcribe(video_path + "audio.mp3", beam_size=self.__beam_size, word_timestamps=True)
 
         segment_subs = {
                 "uuid": uuid,
