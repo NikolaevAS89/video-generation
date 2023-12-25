@@ -36,24 +36,21 @@ if grandparent_directory not in sys.path:
 credentials = pika.credentials.PlainCredentials(username=username,
                                                 password=password)
 
-connection = pika.BlockingConnection(pika.ConnectionParameters(host="rabbitmq",
+connection = pika.BlockingConnection(pika.ConnectionParameters(host=rabbit_host,
                                                                credentials=credentials))
 
 storage = StorageService(path=grandparent_directory)
-manipulator = StorageManipulatorService()
+manipulator = StorageManipulatorService(storage = storage, model_size=model_size, device=device, compute_type=compute_type, beam_size=beam_size)
 
 def callback(ch, method, properties, body):
 
     uuid = body.decode("utf-8")
-
-    storage.get_video_path(uuid=uuid)
-    source = storage.get_source()
-    manipulator.split_source(source)
-    manipulator.generate_subs(source_path = source, uuid=uuid, model_size=model_size, device=device, compute_type=compute_type, beam_size=beam_size)
+    manipulator.split_source(uuid=uuid)
+    answer = manipulator.generate_subs(uuid=uuid)
 
     ch.basic_publish(exchange=exchange_name,
                      routing_key=routing_key_out,
-                     body=json.dumps(manipulator.answer).encode("UTF-8"))
+                     body=json.dumps(answer).encode("UTF-8"))
     
 if __name__ == '__main__':
     channel = connection.channel()

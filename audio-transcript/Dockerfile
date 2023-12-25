@@ -15,4 +15,4 @@ COPY . "/application/"
 RUN python3.10 -m pip install -r "/application/requirements.txt"
 RUN ln -s /usr/bin/python3.10 /usr/bin/python
 WORKDIR "/application/scripts"
-ENTRYPOINT [ "python", 'main.py' ]
+ENTRYPOINT ["python", "main.py"]
