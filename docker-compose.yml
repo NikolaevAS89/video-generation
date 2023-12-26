@@ -6,6 +6,8 @@ services:
       - 8090:8090
     depends_on:
       - server
+    environment:
+      - OPERATOR_PASSWORD=${OPERATOR_PASSWORD}
   server:
     build: backend/
     ports:
