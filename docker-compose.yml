@@ -38,6 +38,23 @@ services:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER}
       - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS}
+      - RABBITMQ_DEFAULT_HOST=${RABBITMQ_DEFAULT_HOST}
+      - QUEUE_IN_NAME=${QUEUE_IN_NAME}
+      - QUEUE_OUT_NAME=${QUEUE_OUT_NAME}
+      - EXCHANGE_NAME=${EXCHANGE_NAME}
+      - ROUTUNG_KEY_IN=${ROUTUNG_KEY_IN}
+      - ROUTING_KEY_OUT=${ROUTING_KEY_OUT}
+      - MODEL_SIZE=${MODEL_SIZE}
+      - DEVICE=${DEVICE}
+      - COMPUTE_TYPE=${COMPUTE_TYPE}
+      - BEAM_SIZE=${BEAM_SIZE}
+    deploy:
+      resources:
+        reservations:
+          devices:
+          - driver: nvidia
+            capabilities: [gpu]
+            count: all
   callback:
     build: caller-log/
     ports:

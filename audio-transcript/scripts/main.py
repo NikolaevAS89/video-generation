@@ -1,44 +1,57 @@
 import json
 import time
-
+import os
+import sys
 import pika
 from pika.exchange_type import ExchangeType
+from storage_lib import StorageService, StorageManipulatorService
 
-credentials = pika.credentials.PlainCredentials(username='videodetector',
-                                                password='123456')
+# RambbitMQ Settings
+username = str(os.getenv("RABBITMQ_DEFAULT_USER"))
+password = str(os.getenv("RABBITMQ_DEFAULT_PASS"))
+rabbit_host = str(os.getenv("RABBITMQ_DEFAULT_HOST"))
 
-connection = pika.BlockingConnection(pika.ConnectionParameters(host="rabbitmq",
+queue_in_name = str(os.getenv("QUEUE_IN_NAME"))
+queue_out_name = str(os.getenv("QUEUE_OUT_NAME"))
+exchange_name = str(os.getenv("EXCHANGE_NAME"))
+routing_key_in = str(os.getenv("ROUTUNG_KEY_IN"))
+routing_key_out = str(os.getenv("ROUTING_KEY_OUT"))
+
+
+# Faster-Whisper Settings
+model_size = str(os.getenv("MODEL_SIZE"))
+device = str(os.getenv("DEVICE"))
+compute_type = str(os.getenv("COMPUTE_TYPE"))
+beam_size = int(os.getenv("BEAM_SIZE"))
+
+
+# Directories
+current_directory = os.path.dirname(os.path.realpath(__file__))
+parent_directory = os.path.dirname(current_directory)
+grandparent_directory = os.path.dirname(parent_directory)
+if grandparent_directory not in sys.path:
+    sys.path.append(grandparent_directory)
+
+
+credentials = pika.credentials.PlainCredentials(username=username,
+                                                password=password)
+
+connection = pika.BlockingConnection(pika.ConnectionParameters(host=rabbit_host,
                                                                credentials=credentials))
 
-queue_in_name = "audio.transcription.queue.in"
-queue_out_name = "audio.transcription.queue.out"
-exchange_name = "audio.transcription.exchange"
-routing_key_in = "audio.transcript.in"
-routing_key_out = "audio.transcript.out"
-
+storage = StorageService(path=grandparent_directory)
+manipulator = StorageManipulatorService(storage = storage, model_size=model_size, device=device, compute_type=compute_type, beam_size=beam_size)
 
 def callback(ch, method, properties, body):
-    print(f" [x] Received   {str(body)}")
-    print(f" [x] Method     {str(method)}")
-    print(f" [x] Properties {str(properties)}")
 
-    # TODO place code here.
-    time.sleep(10)
-    # TODO delete example
-    answer = {
-        "uuid": bytes(body).decode("UTF-8"),
-        "words": [{
-            "word": "Свобода",
-            "start": "00:00:01",
-            "end": "00:00:03"
-        }]
-    }
-    #
+    uuid = body.decode("utf-8")
+    manipulator.split_source(uuid=uuid)
+    answer = manipulator.generate_subs(uuid=uuid)
+
     ch.basic_publish(exchange=exchange_name,
                      routing_key=routing_key_out,
                      body=json.dumps(answer).encode("UTF-8"))
-
-
+    
 if __name__ == '__main__':
     channel = connection.channel()
     channel.exchange_declare(exchange=exchange_name,
