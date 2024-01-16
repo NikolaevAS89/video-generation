@@ -3,6 +3,7 @@ import time
 import os
 import sys
 import pika
+from pika.exceptions import AMQPConnectionError
 from pika.exchange_type import ExchangeType
 from storage_lib import StorageService, StorageManipulatorService
 
@@ -36,9 +37,20 @@ if grandparent_directory not in sys.path:
 credentials = pika.credentials.PlainCredentials(username=username,
                                                 password=password)
 
-connection = pika.BlockingConnection(pika.ConnectionParameters(host=rabbit_host,
-                                                               credentials=credentials))
+def make_connection(host, cred):
+    for count in range(0,10):
+        try:
+            print(f'Try to connect to RabbitMQ {count}')
+            connection = pika.BlockingConnection(pika.ConnectionParameters(host=host,
+                                                                           credentials=cred))
+            return connection
+        except AMQPConnectionError as e:
+            if count>9:
+                raise e
+            else:
+                time.sleep(15)
 
+connection = make_connection(rabbit_host, credentials)
 storage = StorageService(path=grandparent_directory)
 manipulator = StorageManipulatorService(storage = storage, model_size=model_size, device=device, compute_type=compute_type, beam_size=beam_size)
 

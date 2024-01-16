@@ -15,7 +15,6 @@ services:
     depends_on:
       - db
       - liquibase
-      - rabbitmq
       - transcription
     environment:
       - POSTGRES_DB=${POSTGRES_DB}

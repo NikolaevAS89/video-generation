@@ -40,13 +40,14 @@ class SecurityConfiguration {
                         .authenticated())
                 .httpBasic(withDefaults())
                 .formLogin(withDefaults());
+        http.csrf(ServerHttpSecurity.CsrfSpec::disable);
         return http.build();
     }
-
     @Bean
     public SecurityWebFilterChain permitAllSecurityFilterChain(ServerHttpSecurity http) {
         http.securityMatcher(ServerWebExchangeMatchers.anyExchange())
                 .authorizeExchange(exchanges -> exchanges.anyExchange().permitAll());
+        http.csrf(ServerHttpSecurity.CsrfSpec::disable);
         return http.build();
     }
 
