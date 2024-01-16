@@ -14,7 +14,7 @@ rabbit_host = str(os.getenv("RABBITMQ_DEFAULT_HOST"))
 queue_in_name = str(os.getenv("QUEUE_IN_NAME"))
 queue_out_name = str(os.getenv("QUEUE_OUT_NAME"))
 exchange_name = str(os.getenv("EXCHANGE_NAME"))
-routing_key_in = str(os.getenv("ROUTUNG_KEY_IN"))
+routing_key_in = str(os.getenv("ROUTING_KEY_IN"))
 routing_key_out = str(os.getenv("ROUTING_KEY_OUT"))
 
 
