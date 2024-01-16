@@ -10,14 +10,13 @@ services:
       - OPERATOR_PASSWORD=${OPERATOR_PASSWORD}
   server:
     build: backend/
-    ports:
-      - 8080:8080
     volumes:
       - ./volumes/server:/storage
     depends_on:
       - db
       - liquibase
       - rabbitmq
+      - transcription
     environment:
       - POSTGRES_DB=${POSTGRES_DB}
       - POSTGRES_USER=${POSTGRES_USER}
@@ -57,8 +56,6 @@ services:
             count: all
   callback:
     build: caller-log/
-    ports:
-      - 8091:8091
     depends_on:
       - db
       - liquibase
@@ -75,8 +72,6 @@ services:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     volumes:
       - ./volumes/db:/var/lib/postgresql/data
-    ports:
-      - 5432:5432
   liquibase:
     build: liquibase/
     depends_on:
@@ -95,6 +90,3 @@ services:
       - RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS=${RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS}
     volumes:
       - ./volumes/rabbitmq:/var/lib/rabbitmq
-    ports:
-      - 15672:15672
-      - 5672:5672
