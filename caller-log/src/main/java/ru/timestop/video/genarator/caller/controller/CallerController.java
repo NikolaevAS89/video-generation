@@ -5,10 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.timestop.video.genarator.caller.callback.CallerService;
-import ru.timestop.video.genarator.caller.callback.model.CallbackMessage;
-import ru.timestop.video.genarator.caller.callback.entity.CallbackEntity;
-
-import java.util.List;
+import ru.timestop.video.genarator.caller.callback.model.request.CallbackMessage;
 
 /**
  * @author t.i.m.e.s.t.o.p@mail.ru
@@ -28,11 +25,5 @@ public class CallerController {
         this.callerService.saveCallbackMessage(callbackMessage);
         return ResponseEntity.ok()
                 .build();
-    }
-
-    @GetMapping(value = "/callback")
-    public ResponseEntity<List<CallbackEntity>> getCallbacks() {
-        return ResponseEntity.ok()
-                .body(this.callerService.getCallbackMessages());
     }
 }

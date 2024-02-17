@@ -22,6 +22,11 @@ services:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER}
       - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS}
+      - QUEUE_IN_NAME=${QUEUE_IN_NAME}
+      - QUEUE_OUT_NAME=${QUEUE_OUT_NAME}
+      - EXCHANGE_NAME=${EXCHANGE_NAME}
+      - ROUTING_KEY_IN=${ROUTING_KEY_IN}
+      - ROUTING_KEY_OUT=${ROUTING_KEY_OUT}
   transcription:
     build: audio-transcript/
     volumes:
@@ -54,12 +59,23 @@ services:
   callback:
     build: caller-log/
     depends_on:
-      - db
       - liquibase
     environment:
       - POSTGRES_DB=${POSTGRES_DB}
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+  scheduler:
+    build: scheduler/
+    depends_on:
+      - rabbitmq
+      - callback
+    environment:
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS}
+      - RABBITMQ_DEFAULT_HOST=${RABBITMQ_DEFAULT_HOST}
+      - UPLOADER_QUEUE=${UPLOADER_QUEUE}
+      - UPLOADER_ROUTING_KEY=${UPLOADER_ROUTING_KEY}
+      - UPLOADER_EXCHANGE=${UPLOADER_EXCHANGE}
   db:
     image: postgres:14.1-alpine
     restart: always
@@ -69,6 +85,8 @@ services:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     volumes:
       - ./volumes/db:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
   liquibase:
     build: liquibase/
     depends_on:
@@ -87,3 +105,5 @@ services:
       - RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS=${RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS}
     volumes:
       - ./volumes/rabbitmq:/var/lib/rabbitmq
+    ports:
+      - 15672:15672

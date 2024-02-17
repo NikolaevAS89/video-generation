@@ -7,6 +7,7 @@ import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -16,44 +17,49 @@ import org.springframework.context.annotation.Configuration;
  */
 @Configuration
 public class AudioTranscriptionQueueConfigure {
-    static final String QUEUE_IN_NAME = "audio.transcription.queue.in";
-    static final String QUEUE_OUT_NAME = "audio.transcription.queue.out";
-    static final String TOPIC_EXCHANGE_NAME = "audio.transcription.exchange";
-    static final String ROUTING_KEY_IN = "audio.transcript.in";
-    static final String ROUTING_KEY_OUT = "audio.transcript.out";
+    @Value("${rabbitmq.transcription.in.queue}")
+    private String queueInName;
+    @Value("${rabbitmq.transcription.out.queue}")
+    private String queueOutName;
+    @Value("${rabbitmq.transcription.exchange}")
+    private String topicExchangeName;
+    @Value("${rabbitmq.transcription.in.routing.key}")
+    private String routingKeyIn;
+    @Value("${rabbitmq.transcription.out.routing.key}")
+    private String routingKeyOut;
 
-    @Bean(name = QUEUE_IN_NAME)
+    @Bean(name = "QUEUE_IN_NAME")
     public Queue queueIn() {
-        return new Queue(QUEUE_IN_NAME, true);
+        return new Queue(queueInName, true);
     }
 
-    @Bean(name = QUEUE_OUT_NAME)
+    @Bean(name = "QUEUE_OUT_NAME")
     public Queue queueOut() {
-        return new Queue(QUEUE_OUT_NAME, true);
+        return new Queue(queueOutName, true);
     }
 
-    @Bean(name = TOPIC_EXCHANGE_NAME)
+    @Bean(name = "TOPIC_EXCHANGE_NAME")
     public DirectExchange exchange() {
-        return new DirectExchange(TOPIC_EXCHANGE_NAME,
+        return new DirectExchange(topicExchangeName,
                 true,
                 false);
     }
 
 
-    @Bean(name = ROUTING_KEY_IN)
-    public Binding bindingIn(@Qualifier(QUEUE_IN_NAME) Queue queue,
-                             @Qualifier(TOPIC_EXCHANGE_NAME) DirectExchange exchange) {
+    @Bean(name = "ROUTING_KEY_IN")
+    public Binding bindingIn(@Qualifier("QUEUE_IN_NAME") Queue queue,
+                             @Qualifier("TOPIC_EXCHANGE_NAME") DirectExchange exchange) {
         return BindingBuilder.bind(queue)
                 .to(exchange)
-                .with(ROUTING_KEY_IN);
+                .with(routingKeyIn);
     }
 
-    @Bean(name = ROUTING_KEY_OUT)
-    public Binding bindingOut(@Qualifier(QUEUE_OUT_NAME) Queue queue,
-                              @Qualifier(TOPIC_EXCHANGE_NAME) DirectExchange exchange) {
+    @Bean(name = "ROUTING_KEY_OUT")
+    public Binding bindingOut(@Qualifier("QUEUE_OUT_NAME") Queue queue,
+                              @Qualifier("TOPIC_EXCHANGE_NAME") DirectExchange exchange) {
         return BindingBuilder.bind(queue)
                 .to(exchange)
-                .with(ROUTING_KEY_OUT);
+                .with(routingKeyOut);
     }
 
     @Bean
@@ -61,7 +67,7 @@ public class AudioTranscriptionQueueConfigure {
                                                     AudioTranscriptionReceiver receiver) {
         SimpleMessageListenerContainer container = new SimpleMessageListenerContainer();
         container.setConnectionFactory(connectionFactory);
-        container.setQueueNames(QUEUE_OUT_NAME);
+        container.setQueueNames(queueOutName);
         container.setMessageListener(receiver);
         return container;
     }

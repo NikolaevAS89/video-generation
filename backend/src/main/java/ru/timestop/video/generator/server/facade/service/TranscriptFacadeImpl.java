@@ -3,9 +3,10 @@ package ru.timestop.video.generator.server.facade.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.timestop.video.generator.server.facade.TranscriptFacade;
-import ru.timestop.video.generator.server.transcript.TranscriptService;
 import ru.timestop.video.generator.server.template.TemplateService;
 import ru.timestop.video.generator.server.template.entity.TemplateEntity;
+import ru.timestop.video.generator.server.transcript.TranscriptService;
+import ru.timestop.video.generator.server.transcript.entity.TranscriptEntity;
 import ru.timestop.video.generator.server.transcript.model.WordMetadata;
 
 import java.util.List;
@@ -28,7 +29,10 @@ public class TranscriptFacadeImpl implements TranscriptFacade {
     @Override
     public UUID createAndSave(UUID task_id, List<WordMetadata> transcript) {
         TemplateEntity templateEntity = this.templateService.getTask(task_id);
-        return this.transcriptService.createAndSave(templateEntity, transcript).getId();
+        TranscriptEntity transcriptEntity = this.transcriptService.createAndSave(templateEntity, transcript);
+        templateEntity.setStatus("Transcribed"); // TODO status as enum
+        this.templateService.update(templateEntity);
+        return transcriptEntity.getId();
     }
 
     @Override

@@ -1,7 +1,5 @@
-create sequence caller_sequence;
-
 create table callback(
-    id int,
+    id uuid,
     phone varchar,
     name varchar,
     email varchar,

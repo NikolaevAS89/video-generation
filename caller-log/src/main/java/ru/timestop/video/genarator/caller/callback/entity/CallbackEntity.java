@@ -5,11 +5,10 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Parameter;
 
 import java.io.Serializable;
 import java.sql.Timestamp;
+import java.util.UUID;
 
 /**
  * @author t.i.m.e.s.t.o.p@mail.ru
@@ -18,18 +17,10 @@ import java.sql.Timestamp;
 @Table(name = "callback")
 public class CallbackEntity implements Serializable {
 
+
     @Id
-    @GeneratedValue(generator = "sequence-generator")
-    @GenericGenerator(
-            name = "sequence-generator",
-            strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
-            parameters = {
-                    @Parameter(name = "sequence_name", value = "caller_sequence"),
-                    @Parameter(name = "initial_value", value = "1"),
-                    @Parameter(name = "increment_size", value = "1")
-            }
-    )
-    private long id;
+    @GeneratedValue
+    private UUID id;
 
     @Nonnull
     private String phone;
@@ -43,11 +34,11 @@ public class CallbackEntity implements Serializable {
     private Timestamp creation;
 
 
-    public Long getId() {
+    public UUID getId() {
         return id;
     }
 
-    public CallbackEntity setId(Long id) {
+    public CallbackEntity setId(UUID id) {
         this.id = id;
         return this;
     }

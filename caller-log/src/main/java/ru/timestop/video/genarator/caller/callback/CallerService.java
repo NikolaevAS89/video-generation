@@ -1,7 +1,7 @@
 package ru.timestop.video.genarator.caller.callback;
 
 import ru.timestop.video.genarator.caller.callback.entity.CallbackEntity;
-import ru.timestop.video.genarator.caller.callback.model.CallbackMessage;
+import ru.timestop.video.genarator.caller.callback.model.request.Callback;
 
 import java.util.List;
 
@@ -9,7 +9,7 @@ import java.util.List;
  * @author t.i.m.e.s.t.o.p@mail.ru
  */
 public interface CallerService {
-    void saveCallbackMessage(CallbackMessage callbackMessage);
+    CallbackEntity saveCallbackMessage(Callback callbackMessage);
 
     List<CallbackEntity> getCallbackMessages();
 }

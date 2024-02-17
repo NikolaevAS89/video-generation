@@ -33,7 +33,6 @@ public class AudioTranscriptionReceiver implements MessageListener {
         try {
             byte[] body = message.getBody();
             AudioTranscription audioTranscriptions = this.objectMapper.readValue(body, AudioTranscription.class);
-            // TODO set status!!!!
             UUID uuid = this.transcriptFacade.createAndSave(audioTranscriptions.uuid(), audioTranscriptions.words());
             LOGGER.info("New transcript {} was created", uuid);
         } catch (Exception e) {

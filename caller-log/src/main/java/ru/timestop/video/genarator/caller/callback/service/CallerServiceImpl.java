@@ -6,7 +6,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.timestop.video.genarator.caller.callback.CallerService;
-import ru.timestop.video.genarator.caller.callback.model.CallbackMessage;
+import ru.timestop.video.genarator.caller.callback.model.request.Callback;
 import ru.timestop.video.genarator.caller.callback.entity.CallbackEntity;
 import ru.timestop.video.genarator.caller.callback.repository.CallbackRepository;
 
@@ -27,17 +27,17 @@ public class CallerServiceImpl implements CallerService {
     }
 
     @Override
-    public void saveCallbackMessage(CallbackMessage callbackMessage) {
+    public CallbackEntity saveCallbackMessage(Callback callbackMessage) {
         CallbackEntity callback = new CallbackEntity();
         callback.setPhone(callbackMessage.phone());
         callback.setName(callbackMessage.name());
         callback.setEmail(callbackMessage.email());
         callback.setCreation(Timestamp.valueOf(LocalDateTime.now()));
-        this.callbackRepository.saveAndFlush(callback);
+        return this.callbackRepository.saveAndFlush(callback);
     }
 
     @Override
-    @Transactional
+    @Transactional()
     public List<CallbackEntity> getCallbackMessages() {
         LOGGER.warn("Extract all callback messages!");
         List<CallbackEntity> entities = this.callbackRepository.findAll();

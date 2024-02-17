@@ -4,4 +4,5 @@
 
     <include relativeToChangelogFile="true" file="sql/init.sql"/>
     <include relativeToChangelogFile="true" file="sql/caller.sql"/>
+    <include relativeToChangelogFile="true" file="sql/demo.sql"/>
 </databaseChangeLog>

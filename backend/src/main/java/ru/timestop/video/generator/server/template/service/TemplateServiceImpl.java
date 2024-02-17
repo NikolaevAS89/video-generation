@@ -24,10 +24,8 @@ import java.util.UUID;
 @Service
 public class TemplateServiceImpl implements TemplateService {
     private static final Logger LOGGER = LoggerFactory.getLogger(TemplateServiceImpl.class);
-
     private final TemplateRepository templateRepository;
     private final SourceVideoStorageService sourceVideoStorageService;
-
     private final TranscriptService transcriptService;
     private final AudioTranscriptionSender audioTranscriptionSender;
 
@@ -54,6 +52,8 @@ public class TemplateServiceImpl implements TemplateService {
             return this.templateRepository.saveAndFlush(templateEntity);
         } catch (Exception e) {
             this.sourceVideoStorageService.deleteFolder(templateEntity.getId());
+            templateEntity.setStatus("Error: " + e.getMessage());
+            this.templateRepository.save(templateEntity);
             throw new RuntimeException("File not loaded " + filename, e);
         }
     }
@@ -76,6 +76,7 @@ public class TemplateServiceImpl implements TemplateService {
     public TemplateEntity getTask(UUID uuid) {
         return this.templateRepository.getReferenceById(uuid);
     }
+
 
     @Override
     public List<TemplateEntity> getAllTasks() {

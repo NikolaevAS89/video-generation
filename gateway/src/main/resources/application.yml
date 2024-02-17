@@ -3,6 +3,8 @@ server:
   forward-headers-strategy: framework
 
 urls:
+  demo:
+    url: http://server:8080
   template:
     url: http://server:8080
   storage:
@@ -38,6 +40,10 @@ spring:
         pool:
           max-idle-time: 180s
       routes:
+        - id: demo
+          uri: ${urls.demo.url}
+          predicates:
+            - Path=/demo/**
         - id: storage
           uri: ${urls.storage.url}
           predicates:
