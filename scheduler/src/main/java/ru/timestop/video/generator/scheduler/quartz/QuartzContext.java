@@ -5,7 +5,6 @@ import org.quartz.Trigger;
 import org.quartz.simpl.SimpleJobFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -17,6 +16,8 @@ import ru.timestop.video.generator.scheduler.quartz.job.SendTriggerToCheckStatus
 import ru.timestop.video.generator.scheduler.quartz.job.SendTriggerToGenerateVideosJob;
 import ru.timestop.video.generator.scheduler.quartz.job.SendTriggerToUploadCallbackListJob;
 
+import java.util.Arrays;
+
 /**
  * @author t.i.m.e.s.t.o.p@mail.ru
  */
@@ -24,56 +25,59 @@ import ru.timestop.video.generator.scheduler.quartz.job.SendTriggerToUploadCallb
 public class QuartzContext {
     private static final Logger LOGGER = LoggerFactory.getLogger(SendTriggerToUploadCallbackListJob.class);
 
-    @Bean(name = "JobDetailFireUploadDataToGoogle")
+    @Bean
     public JobDetailFactoryBean jobDetailFireUploadDataToGoogle() {
         JobDetailFactoryBean jobDetailFactory = new JobDetailFactoryBean();
         jobDetailFactory.setJobClass(SendTriggerToUploadCallbackListJob.class);
         jobDetailFactory.setDurability(true);
-        return jobDetailFactory;
-    }
-
-    @Bean(name = "JobDetailFireGenerateVideosByGoogleData")
-    public JobDetailFactoryBean jobDetailFireGenerateVideosByGoogleData() {
-        JobDetailFactoryBean jobDetailFactory = new JobDetailFactoryBean();
-        jobDetailFactory.setJobClass(SendTriggerToGenerateVideosJob.class);
-        jobDetailFactory.setDurability(true);
-        return jobDetailFactory;
-    }
-
-    @Bean(name = "JobDetailFireCheckStatus")
-    public JobDetailFactoryBean jobDetail() {
-        JobDetailFactoryBean jobDetailFactory = new JobDetailFactoryBean();
-        jobDetailFactory.setJobClass(SendTriggerToCheckStatusJob.class);
-        jobDetailFactory.setDurability(true);
+        jobDetailFactory.setBeanName("SendTriggerToUploadCallbackListJob");
         return jobDetailFactory;
     }
 
     @Bean
-    public CronTriggerFactoryBean triggerFireUploadDataToGoogle(@Qualifier("JobDetailFireUploadDataToGoogle") JobDetail job) {
+    public JobDetailFactoryBean jobDetailFireGenerateVideosByGoogleData() {
+        JobDetailFactoryBean jobDetailFactory = new JobDetailFactoryBean();
+        jobDetailFactory.setJobClass(SendTriggerToGenerateVideosJob.class);
+        jobDetailFactory.setDurability(true);
+        jobDetailFactory.setBeanName("SendTriggerToGenerateVideosJob");
+        return jobDetailFactory;
+    }
+
+    @Bean
+    public JobDetailFactoryBean jobDetail() {
+        JobDetailFactoryBean jobDetailFactory = new JobDetailFactoryBean();
+        jobDetailFactory.setJobClass(SendTriggerToCheckStatusJob.class);
+        jobDetailFactory.setDurability(true);
+        jobDetailFactory.setBeanName("SendTriggerToCheckStatusJob");
+        return jobDetailFactory;
+    }
+
+    @Bean
+    public CronTriggerFactoryBean triggerFireUploadDataToGoogle(@Qualifier("SendTriggerToUploadCallbackListJob") JobDetail job) {
         CronTriggerFactoryBean trigger = new CronTriggerFactoryBean();
         trigger.setJobDetail(job);
         trigger.setCronExpression("0 0 6 * * ?"); // TODO
-        trigger.setBeanName("FireUploadDataToGoogle");
+        trigger.setBeanName("FireUploadDataToGoogleTrigger");
         trigger.setDescription("FireUploadDataToGoogle");
         return trigger;
     }
 
     @Bean
-    public CronTriggerFactoryBean triggerFireGenerateVideosByGoogleData(@Qualifier("JobDetailFireGenerateVideosByGoogleData") JobDetail job) {
+    public CronTriggerFactoryBean triggerFireGenerateVideosByGoogleData(@Qualifier("SendTriggerToGenerateVideosJob") JobDetail job) {
         CronTriggerFactoryBean trigger = new CronTriggerFactoryBean();
         trigger.setJobDetail(job);
         trigger.setCronExpression("0 0 20 * * ?"); // TODO
-        trigger.setBeanName("FireGenerateVideosByGoogleData");
+        trigger.setBeanName("FireGenerateVideosByGoogleDataTrigger");
         trigger.setDescription("FireGenerateVideosByGoogleData");
         return trigger;
     }
 
     @Bean
-    public CronTriggerFactoryBean triggerFireCheckStatus(@Qualifier("JobDetailFireCheckStatus") JobDetail job) {
+    public CronTriggerFactoryBean triggerFireCheckStatus(@Qualifier("SendTriggerToCheckStatusJob") JobDetail job) {
         CronTriggerFactoryBean trigger = new CronTriggerFactoryBean();
         trigger.setJobDetail(job);
         trigger.setCronExpression("0 * * * * ?"); // TODO
-        trigger.setBeanName("FireCheckStatus");
+        trigger.setBeanName("FireCheckStatusTrigger");
         trigger.setDescription("FireCheckStatus");
         return trigger;
     }
@@ -83,12 +87,12 @@ public class QuartzContext {
         SchedulerFactoryBean schedulerFactory = new SchedulerFactoryBean();
         schedulerFactory.setConfigLocation(new ClassPathResource("quartz.properties"));
         schedulerFactory.setJobFactory(new SimpleJobFactory());
-        for (Trigger trigger : triggers) {
-            LOGGER.info("Add trigger {}", trigger.getDescription());
-            JobDetail jobDetail = (JobDetail) trigger.getJobDataMap().remove("jobDetail");
-            schedulerFactory.setJobDetails(jobDetail);
-            schedulerFactory.setTriggers(trigger);
-        }
+        JobDetail[] jobDetails = (JobDetail[]) Arrays.stream(triggers)
+                .map(trigger -> (JobDetail) trigger.getJobDataMap().get("jobDetail"))
+                .toArray();
+        schedulerFactory.setJobDetails(jobDetails);
+        schedulerFactory.setTriggers(triggers);
+        schedulerFactory.setApplicationContextSchedulerContextKey("applicationContext");
         return schedulerFactory;
     }
 }

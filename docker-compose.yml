@@ -1,34 +1,36 @@
 version: "3.8"
 services:
-  gateway:
-    build: gateway/
-    ports:
-      - 8090:8090
-    depends_on:
-      - server
+  rabbitmq:
+    image: rabbitmq:3.12.6-management-alpine
+    hostname: rabbitmq
+    restart: always
     environment:
-      - OPERATOR_PASSWORD=${OPERATOR_PASSWORD}
-  server:
-    build: backend/
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS}
+      - RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS=${RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS}
     volumes:
-      - ./volumes/server:/storage
-    depends_on:
-      - db
-      - liquibase
-      - transcription
+      - ./volumes/rabbitmq:/var/lib/rabbitmq
     ports:
-      - 8080:8080
+      - 15672:15672
+  db:
+    image: postgres:14.1-alpine
+    restart: always
     environment:
       - POSTGRES_DB=${POSTGRES_DB}
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER}
-      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS}
-      - QUEUE_IN_NAME=${QUEUE_IN_NAME}
-      - QUEUE_OUT_NAME=${QUEUE_OUT_NAME}
-      - EXCHANGE_NAME=${EXCHANGE_NAME}
-      - ROUTING_KEY_IN=${ROUTING_KEY_IN}
-      - ROUTING_KEY_OUT=${ROUTING_KEY_OUT}
+    volumes:
+      - ./volumes/db:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+  liquibase:
+    build: liquibase/
+    depends_on:
+      - db
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
   transcription:
     build: audio-transcript/
     volumes:
@@ -55,9 +57,30 @@ services:
       resources:
         reservations:
           devices:
-          - driver: nvidia
-            capabilities: [gpu]
-            count: all
+            - driver: nvidia
+              capabilities: [gpu]
+              count: all
+  server:
+    build: backend/
+    volumes:
+      - ./volumes/server:/storage
+    depends_on:
+      - db
+      - liquibase
+      - transcription
+    ports:
+      - 8080:8080
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS}
+      - QUEUE_IN_NAME=${QUEUE_IN_NAME}
+      - QUEUE_OUT_NAME=${QUEUE_OUT_NAME}
+      - EXCHANGE_NAME=${EXCHANGE_NAME}
+      - ROUTING_KEY_IN=${ROUTING_KEY_IN}
+      - ROUTING_KEY_OUT=${ROUTING_KEY_OUT}
   callback:
     build: caller-log/
     depends_on:
@@ -78,34 +101,11 @@ services:
       - UPLOADER_QUEUE=${UPLOADER_QUEUE}
       - UPLOADER_ROUTING_KEY=${UPLOADER_ROUTING_KEY}
       - UPLOADER_EXCHANGE=${UPLOADER_EXCHANGE}
-  db:
-    image: postgres:14.1-alpine
-    restart: always
-    environment:
-      - POSTGRES_DB=${POSTGRES_DB}
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-    volumes:
-      - ./volumes/db:/var/lib/postgresql/data
+  gateway:
+    build: gateway/
     ports:
-      - 5432:5432
-  liquibase:
-    build: liquibase/
+      - 8090:8090
     depends_on:
-      - db
+      - server
     environment:
-      - POSTGRES_DB=${POSTGRES_DB}
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-  rabbitmq:
-    image: rabbitmq:3.12.6-management-alpine
-    hostname: rabbitmq
-    restart: always
-    environment:
-      - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER}
-      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS}
-      - RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS=${RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS}
-    volumes:
-      - ./volumes/rabbitmq:/var/lib/rabbitmq
-    ports:
-      - 15672:15672
+      - OPERATOR_PASSWORD=${OPERATOR_PASSWORD}

@@ -44,7 +44,6 @@ public class ProcessedController {
     public ResponseEntity<StreamingResponseBody> getProcessedToPlay(@PathVariable("uuid") String uuid,
                                                                     @RequestHeader(value = "Range", required = false)
                                                                     String rangeHeader) {
-        // TODO IT'S MOCK
         FilesContent filesContent = this.generatedVideoStorageService.readGeneratedVideo(UUID.fromString(uuid));
         return prepareContent(filesContent, rangeHeader);
     }

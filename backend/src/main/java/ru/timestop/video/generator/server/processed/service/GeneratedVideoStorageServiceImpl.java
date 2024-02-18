@@ -1,6 +1,7 @@
 package ru.timestop.video.generator.server.processed.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import ru.timestop.video.generator.server.processed.GeneratedVideoStorageService;
 import ru.timestop.video.generator.server.processed.entity.ProcessedEntity;
 import ru.timestop.video.generator.server.processed.model.request.RequestStatus;
@@ -22,6 +23,7 @@ import java.util.stream.Collectors;
 /**
  * @author t.i.m.e.s.t.o.p@mail.ru
  */
+@Service
 public class GeneratedVideoStorageServiceImpl implements GeneratedVideoStorageService {
     private final SourceVideoStorageService sourceVideoStorageService;
     private final ProcessedRepository processedRepository;
