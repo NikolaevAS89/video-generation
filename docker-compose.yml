@@ -109,3 +109,20 @@ services:
       - server
     environment:
       - OPERATOR_PASSWORD=${OPERATOR_PASSWORD}
+
+  gsheets:
+    build: gsheets-poster-service/
+    volumes:
+      - ./volumes/sheets:/gsheets
+    depends_on:
+      - rabbitmq
+      - callback
+      - server
+    environment:
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS}
+      - RABBITMQ_DEFAULT_HOST=${RABBITMQ_DEFAULT_HOST}
+      - UPLOADER_QUEUE=${UPLOADER_QUEUE}
+      - UPLOADER_ROUTING_KEY=${UPLOADER_ROUTING_KEY}
+      - UPLOADER_EXCHANGE=${UPLOADER_EXCHANGE}
+    

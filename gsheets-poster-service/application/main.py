@@ -15,9 +15,9 @@ username = str(os.getenv("RABBITMQ_DEFAULT_USER"))
 password = str(os.getenv("RABBITMQ_DEFAULT_PASS"))
 rabbit_host = str(os.getenv("RABBITMQ_DEFAULT_HOST"))
 
-queue_name = str(os.getenv("G_SHEETS_QUEUE_NAME"))
-exchange_name = str(os.getenv("G_SHEETS_EXCHANGE_NAME"))
-routing_key = str(os.getenv("G_SHEETS_ROUTING_KEY_IN"))
+queue_name = str(os.getenv("UPLOADER_QUEUE"))
+exchange_name = str(os.getenv("UPLOADER_EXCHANGE"))
+routing_key = str(os.getenv("UPLOADER_ROUTING_KEY"))
 
 # GOOGLE SERVICE ACCOUNT
 
