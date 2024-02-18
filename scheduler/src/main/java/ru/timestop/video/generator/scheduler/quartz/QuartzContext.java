@@ -5,7 +5,9 @@ import org.quartz.Trigger;
 import org.quartz.simpl.SimpleJobFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
@@ -25,30 +27,33 @@ import java.util.Arrays;
 public class QuartzContext {
     private static final Logger LOGGER = LoggerFactory.getLogger(SendTriggerToUploadCallbackListJob.class);
 
-    @Bean
+    @Autowired
+    private ApplicationContext applicationContext;
+
+    @Bean(name = "SendTriggerToUploadCallbackListJob")
     public JobDetailFactoryBean jobDetailFireUploadDataToGoogle() {
         JobDetailFactoryBean jobDetailFactory = new JobDetailFactoryBean();
         jobDetailFactory.setJobClass(SendTriggerToUploadCallbackListJob.class);
         jobDetailFactory.setDurability(true);
-        jobDetailFactory.setBeanName("SendTriggerToUploadCallbackListJob");
+        jobDetailFactory.setApplicationContext(applicationContext);
         return jobDetailFactory;
     }
 
-    @Bean
+    @Bean(name = "SendTriggerToGenerateVideosJob")
     public JobDetailFactoryBean jobDetailFireGenerateVideosByGoogleData() {
         JobDetailFactoryBean jobDetailFactory = new JobDetailFactoryBean();
         jobDetailFactory.setJobClass(SendTriggerToGenerateVideosJob.class);
         jobDetailFactory.setDurability(true);
-        jobDetailFactory.setBeanName("SendTriggerToGenerateVideosJob");
+        jobDetailFactory.setApplicationContext(applicationContext);
         return jobDetailFactory;
     }
 
-    @Bean
-    public JobDetailFactoryBean jobDetail() {
+    @Bean(name = "SendTriggerToCheckStatusJob")
+    public JobDetailFactoryBean SendTriggerToCheckStatusJob() {
         JobDetailFactoryBean jobDetailFactory = new JobDetailFactoryBean();
         jobDetailFactory.setJobClass(SendTriggerToCheckStatusJob.class);
         jobDetailFactory.setDurability(true);
-        jobDetailFactory.setBeanName("SendTriggerToCheckStatusJob");
+        jobDetailFactory.setApplicationContext(applicationContext);
         return jobDetailFactory;
     }
 

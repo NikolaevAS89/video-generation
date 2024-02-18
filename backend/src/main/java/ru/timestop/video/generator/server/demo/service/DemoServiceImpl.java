@@ -4,6 +4,7 @@ import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import ru.timestop.video.generator.server.demo.DemoService;
 import ru.timestop.video.generator.server.demo.entity.DemoEntity;
 import ru.timestop.video.generator.server.demo.repository.DemoRepository;
@@ -16,6 +17,7 @@ import java.util.UUID;
 /**
  * @author t.i.m.e.s.t.o.p@mail.ru
  */
+@Component
 public class DemoServiceImpl implements DemoService {
     private static final Logger LOGGER = LoggerFactory.getLogger(DemoServiceImpl.class);
     private final DemoRepository demoRepository;
