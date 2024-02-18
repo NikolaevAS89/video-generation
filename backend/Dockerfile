@@ -9,6 +9,5 @@ RUN ls build/libs
 
 FROM openjdk:17-alpine
 VOLUME /storage
-COPY example.mp4 /storage/example.mp4
 COPY --from=build /home/gradle/server/build/libs/server-1.0-SNAPSHOT.jar app.jar
 ENTRYPOINT ["java", "-jar", "/app.jar"]
