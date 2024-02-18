@@ -21,6 +21,6 @@ public class SendTriggerToCheckStatusJob implements Job {
 
     public void execute(JobExecutionContext context) {
         LOGGER.info("Send message to check status of generation");
-        this.messageSender.send("{\"action\":\"CheckStatus\"}");
+        this.messageSender.send("{\"action\":\"checkStatus\"}");
     }
 }

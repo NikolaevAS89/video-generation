@@ -15,5 +15,6 @@ public interface SourceVideoStorageService {
     void saveSourceVideo(UUID sourceVideosUuid, InputStream stream);
 
     FilesContent readSourceVideo(UUID sourceVideosUuid);
+     FilesContent readGeneratedVideo(UUID template_uuid, UUID request_uuid);
 
 }

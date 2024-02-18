@@ -5,19 +5,19 @@ import jakarta.annotation.Nonnull;
 import jakarta.persistence.*;
 import org.hibernate.annotations.Type;
 import ru.timestop.video.generator.server.template.entity.TemplateEntity;
-import ru.timestop.video.generator.server.transcript.model.WordMetadata;
 
 import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 /**
  * @author t.i.m.e.s.t.o.p@mail.ru
  */
 @Entity
-@Table(name = "transcript")
-public class TranscriptEntity implements Serializable {
+@Table(name = "audio_template")
+public class AudioTemplateEntity implements Serializable {
 
     @Id
     @GeneratedValue
@@ -28,9 +28,13 @@ public class TranscriptEntity implements Serializable {
     @ManyToOne(fetch = FetchType.LAZY)
     private TemplateEntity template;
 
-    @Column(name = "transcript", columnDefinition = "jsonb", nullable = false)
+    @Column(name = "mapping", columnDefinition = "jsonb", nullable = false)
     @Type(JsonType.class)
-    private List<WordMetadata> transcript;
+    private Map<String, Integer> mapping;
+
+    @Column(name = "chosen", columnDefinition = "jsonb", nullable = false)
+    @Type(JsonType.class)
+    private List<Integer> chosen;
 
     @Nonnull
     private Timestamp creation;
@@ -39,7 +43,7 @@ public class TranscriptEntity implements Serializable {
         return id;
     }
 
-    public TranscriptEntity setId(UUID id) {
+    public AudioTemplateEntity setId(UUID id) {
         this.id = id;
         return this;
     }
@@ -48,17 +52,26 @@ public class TranscriptEntity implements Serializable {
         return template;
     }
 
-    public TranscriptEntity setTemplate(TemplateEntity template) {
+    public AudioTemplateEntity setTemplate(TemplateEntity template) {
         this.template = template;
         return this;
     }
 
-    public List<WordMetadata> getTranscript() {
-        return transcript;
+    public Map<String, Integer> getMapping() {
+        return mapping;
     }
 
-    public TranscriptEntity setTranscript(List<WordMetadata> transcript) {
-        this.transcript = transcript;
+    public AudioTemplateEntity setMapping(Map<String, Integer> mapping) {
+        this.mapping = mapping;
+        return this;
+    }
+
+    public List<Integer> getChosen() {
+        return chosen;
+    }
+
+    public AudioTemplateEntity setChosen(List<Integer> chosen) {
+        this.chosen = chosen;
         return this;
     }
 
@@ -66,7 +79,7 @@ public class TranscriptEntity implements Serializable {
         return creation;
     }
 
-    public TranscriptEntity setCreation(Timestamp creation) {
+    public AudioTemplateEntity setCreation(Timestamp creation) {
         this.creation = creation;
         return this;
     }

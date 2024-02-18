@@ -10,6 +10,7 @@ import ru.timestop.video.generator.server.storage.SourceVideoStorageService;
 import ru.timestop.video.generator.server.template.TemplateService;
 import ru.timestop.video.generator.server.template.entity.TemplateEntity;
 import ru.timestop.video.generator.server.template.repository.TemplateRepository;
+import ru.timestop.video.generator.server.transcript.AudioTemplateService;
 import ru.timestop.video.generator.server.transcript.TranscriptService;
 
 import java.io.InputStream;
@@ -28,15 +29,18 @@ public class TemplateServiceImpl implements TemplateService {
     private final SourceVideoStorageService sourceVideoStorageService;
     private final TranscriptService transcriptService;
     private final AudioTranscriptionSender audioTranscriptionSender;
+    private final AudioTemplateService audioTemplateService;
 
     public TemplateServiceImpl(@Autowired TemplateRepository templateRepository,
                                @Autowired SourceVideoStorageService sourceVideoStorageService,
                                @Autowired TranscriptService transcriptService,
-                               @Autowired AudioTranscriptionSender audioTranscriptionSender) {
+                               @Autowired AudioTranscriptionSender audioTranscriptionSender,
+                               @Autowired AudioTemplateService audioTemplateService) {
         this.templateRepository = templateRepository;
         this.sourceVideoStorageService = sourceVideoStorageService;
         this.transcriptService = transcriptService;
         this.audioTranscriptionSender = audioTranscriptionSender;
+        this.audioTemplateService = audioTemplateService;
     }
 
     @Override
@@ -70,6 +74,7 @@ public class TemplateServiceImpl implements TemplateService {
         this.transcriptService.deleteByTemplate(templateEntity);
         this.templateRepository.delete(templateEntity);
         this.sourceVideoStorageService.deleteFolder(uuid);
+        this.audioTemplateService.deleteByTemplate(templateEntity);
     }
 
     @Override

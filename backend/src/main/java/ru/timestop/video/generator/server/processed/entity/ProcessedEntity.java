@@ -1,24 +1,23 @@
-package ru.timestop.video.generator.server.transcript.entity;
+package ru.timestop.video.generator.server.processed.entity;
 
 import io.hypersistence.utils.hibernate.type.json.JsonType;
 import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import org.hibernate.annotations.Type;
 import ru.timestop.video.generator.server.template.entity.TemplateEntity;
-import ru.timestop.video.generator.server.transcript.model.WordMetadata;
 
 import java.io.Serializable;
 import java.sql.Timestamp;
-import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 /**
  * @author t.i.m.e.s.t.o.p@mail.ru
  */
 @Entity
-@Table(name = "transcript")
-public class TranscriptEntity implements Serializable {
-
+@Table(name = "processed")
+public class ProcessedEntity implements Serializable {
     @Id
     @GeneratedValue
     private UUID id;
@@ -28,9 +27,11 @@ public class TranscriptEntity implements Serializable {
     @ManyToOne(fetch = FetchType.LAZY)
     private TemplateEntity template;
 
-    @Column(name = "transcript", columnDefinition = "jsonb", nullable = false)
+    @Nullable
+    private String status;
+    @Column(name = "words", columnDefinition = "jsonb", nullable = false)
     @Type(JsonType.class)
-    private List<WordMetadata> transcript;
+    private Map<String, String> words;
 
     @Nonnull
     private Timestamp creation;
@@ -39,8 +40,17 @@ public class TranscriptEntity implements Serializable {
         return id;
     }
 
-    public TranscriptEntity setId(UUID id) {
+    public ProcessedEntity setId(UUID id) {
         this.id = id;
+        return this;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public ProcessedEntity setStatus(String status) {
+        this.status = status;
         return this;
     }
 
@@ -48,17 +58,17 @@ public class TranscriptEntity implements Serializable {
         return template;
     }
 
-    public TranscriptEntity setTemplate(TemplateEntity template) {
+    public ProcessedEntity setTemplate(TemplateEntity template) {
         this.template = template;
         return this;
     }
 
-    public List<WordMetadata> getTranscript() {
-        return transcript;
+    public Map<String, String> getWords() {
+        return words;
     }
 
-    public TranscriptEntity setTranscript(List<WordMetadata> transcript) {
-        this.transcript = transcript;
+    public ProcessedEntity setWords(Map<String, String> words) {
+        this.words = words;
         return this;
     }
 
@@ -66,7 +76,7 @@ public class TranscriptEntity implements Serializable {
         return creation;
     }
 
-    public TranscriptEntity setCreation(Timestamp creation) {
+    public ProcessedEntity setCreation(Timestamp creation) {
         this.creation = creation;
         return this;
     }

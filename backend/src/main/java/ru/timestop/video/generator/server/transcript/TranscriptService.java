@@ -14,9 +14,5 @@ public interface TranscriptService {
 
     List<WordMetadata> getTranscript(TemplateEntity template);
 
-    void setChosen(TemplateEntity template, List<Integer> chosen);
-
-    List<Integer> getChosen(TemplateEntity template);
-
     void deleteByTemplate(TemplateEntity template);
 }

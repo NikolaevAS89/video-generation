@@ -7,9 +7,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 import ru.timestop.video.generator.server.processed.GeneratedVideoStorageService;
+import ru.timestop.video.generator.server.processed.model.request.RequestStatus;
+import ru.timestop.video.generator.server.processed.model.request.RequestToGenerateVideo;
+import ru.timestop.video.generator.server.processed.model.response.RequestsStatus;
 import ru.timestop.video.generator.server.storage.model.FilesContent;
 import ru.timestop.video.generator.server.utilites.IOUtils;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -24,6 +28,15 @@ public class ProcessedController {
         this.generatedVideoStorageService = generatedVideoStorageService;
     }
 
+    @GetMapping(value = "/generator/list/status")
+    public List<RequestsStatus> getStatuses(@RequestBody List<RequestStatus> requests) {
+        return generatedVideoStorageService.getStatuses(requests);
+    }
+
+    @PostMapping(value = "/generator/list")
+    public List<RequestsStatus> createTasks(@RequestBody List<RequestToGenerateVideo> requests) {
+        return generatedVideoStorageService.createRequestsToGenerate(requests);
+    }
 
     // проиграть видео с измененной звуковой дорожкой GET /video/{uuid}/processed request body {"{patern_name1}": "....", ....}
     @GetMapping(value = "/processed/{uuid}")

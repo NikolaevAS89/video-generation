@@ -5,6 +5,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.timestop.video.generator.server.facade.TranscriptFacade;
+import ru.timestop.video.generator.server.transcript.model.AudioTemplate;
 import ru.timestop.video.generator.server.transcript.model.WordMetadata;
 
 import java.util.List;
@@ -34,17 +35,17 @@ public class TranscriptController {
 
     // отправить размеченный текст POST /transcript/{uuid}/text [n1, n2, .... ]
     @PostMapping(value = "/transcript/{uuid}/chosen")
-    public ResponseEntity<Void> setChosen(@PathVariable("uuid") String uuid,
-                                          @RequestBody List<Integer> chose) {
-        this.transcriptFacade.setChosen(UUID.fromString(uuid), chose);
+    public ResponseEntity<Void> setChosen(@PathVariable("uuid") String template_uuid,
+                                          @RequestBody AudioTemplate audioTemplate) {
+        this.transcriptFacade.setChosen(UUID.fromString(template_uuid), audioTemplate);
         return ResponseEntity.ok()
                 .build();
     }
 
     // отправить размеченный текст POST /transcript/{uuid}/text [n1, n2, .... ]
     @GetMapping(value = "/transcript/{uuid}/chosen")
-    public ResponseEntity<List<Integer>> getChosen(@PathVariable("uuid") String uuid) {
-        List<Integer> chosen = this.transcriptFacade.getChosen(UUID.fromString(uuid));
+    public ResponseEntity<AudioTemplate> getChosen(@PathVariable("uuid") String template_uuid) {
+        AudioTemplate chosen = this.transcriptFacade.getChosen(UUID.fromString(template_uuid));
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(chosen);

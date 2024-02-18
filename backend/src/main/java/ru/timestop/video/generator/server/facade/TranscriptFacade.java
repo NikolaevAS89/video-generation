@@ -1,5 +1,6 @@
 package ru.timestop.video.generator.server.facade;
 
+import ru.timestop.video.generator.server.transcript.model.AudioTemplate;
 import ru.timestop.video.generator.server.transcript.model.WordMetadata;
 
 import java.util.List;
@@ -11,9 +12,9 @@ import java.util.UUID;
 public interface TranscriptFacade {
     UUID createAndSave(UUID task_id, List<WordMetadata> transcript);
 
-    List<WordMetadata> getTranscript(UUID task_id);
+    List<WordMetadata> getTranscript(UUID template_uuid);
 
-    void setChosen(UUID task_id, List<Integer> chosen);
+    void setChosen(UUID template_uuid, AudioTemplate audioTemplate);
 
-    List<Integer> getChosen(UUID task_id);
+    AudioTemplate getChosen(UUID template_uuid);
 }

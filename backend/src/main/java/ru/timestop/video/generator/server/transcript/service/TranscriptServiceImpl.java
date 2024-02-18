@@ -29,8 +29,7 @@ public class TranscriptServiceImpl implements TranscriptService {
     public TranscriptEntity createAndSave(TemplateEntity templateEntity, List<WordMetadata> transcript) {
         TranscriptEntity transcriptEntity = new TranscriptEntity().setCreation(Timestamp.valueOf(LocalDateTime.now()))
                 .setTranscript(transcript)
-                .setTemplate(templateEntity)
-                .setChosen(Collections.emptyList());
+                .setTemplate(templateEntity);
         return transcriptRepository.save(transcriptEntity);
     }
 
@@ -39,20 +38,6 @@ public class TranscriptServiceImpl implements TranscriptService {
         return this.transcriptRepository.findByTemplate(templateEntity)
                 .orElse(EMPTY_ENTITY)
                 .getTranscript();
-    }
-
-    @Override
-    public void setChosen(TemplateEntity templateEntity, List<Integer> chosen) {
-        this.transcriptRepository.findByTemplate(templateEntity)
-                .ifPresent(transcriptEntity -> {
-                    transcriptEntity.setChosen(chosen);
-                    this.transcriptRepository.save(transcriptEntity);
-                });
-    }
-
-    @Override
-    public List<Integer> getChosen(TemplateEntity templateEntity) {
-        return this.transcriptRepository.findByTemplate(templateEntity).orElse(EMPTY_ENTITY).getChosen();
     }
 
     @Override
