@@ -30,3 +30,7 @@ __pycache__
 script_test.py
 storage/
 .devcontainer/
+
+# GOOGLE ACCOUNT
+
+service_account.json
