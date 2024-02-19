@@ -4,7 +4,7 @@ RUN mkdir "/application"
 
 COPY "requirements.txt" "/application/requirements.txt"
 
-COPY . "/application/"
+COPY "/application" "/application/"
 
 COPY "service_account.json" "/application/service_account.json"
 

@@ -31,6 +31,26 @@ services:
       - POSTGRES_DB=${POSTGRES_DB}
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+  server:
+    build: backend/
+    volumes:
+      - ./volumes/server:/storage
+    depends_on:
+      - db
+      - liquibase
+    ports:
+      - 8080:8080
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS}
+      - QUEUE_IN_NAME=${QUEUE_IN_NAME}
+      - QUEUE_OUT_NAME=${QUEUE_OUT_NAME}
+      - EXCHANGE_NAME=${EXCHANGE_NAME}
+      - ROUTING_KEY_IN=${ROUTING_KEY_IN}
+      - ROUTING_KEY_OUT=${ROUTING_KEY_OUT}
   transcription:
     build: audio-transcript/
     volumes:
@@ -60,27 +80,6 @@ services:
             - driver: nvidia
               capabilities: [gpu]
               count: all
-  server:
-    build: backend/
-    volumes:
-      - ./volumes/server:/storage
-    depends_on:
-      - db
-      - liquibase
-      - transcription
-    ports:
-      - 8080:8080
-    environment:
-      - POSTGRES_DB=${POSTGRES_DB}
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER}
-      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS}
-      - QUEUE_IN_NAME=${QUEUE_IN_NAME}
-      - QUEUE_OUT_NAME=${QUEUE_OUT_NAME}
-      - EXCHANGE_NAME=${EXCHANGE_NAME}
-      - ROUTING_KEY_IN=${ROUTING_KEY_IN}
-      - ROUTING_KEY_OUT=${ROUTING_KEY_OUT}
   callback:
     build: caller-log/
     depends_on:
@@ -125,5 +124,5 @@ services:
       - UPLOADER_QUEUE=${UPLOADER_QUEUE}
       - UPLOADER_ROUTING_KEY=${UPLOADER_ROUTING_KEY}
       - UPLOADER_EXCHANGE=${UPLOADER_EXCHANGE}
-      - UPLOADER_EXCHANGE=${GOOGLE_SERVICE_ACCOUNT}
+      - GOOGLE_SERVICE_ACCOUNT=${GOOGLE_SERVICE_ACCOUNT}
     
