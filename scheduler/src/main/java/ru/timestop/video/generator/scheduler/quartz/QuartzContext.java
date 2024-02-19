@@ -1,6 +1,7 @@
 package ru.timestop.video.generator.scheduler.quartz;
 
 import org.quartz.JobDetail;
+import org.quartz.SchedulerContext;
 import org.quartz.Trigger;
 import org.quartz.simpl.SimpleJobFactory;
 import org.slf4j.Logger;
@@ -14,11 +15,11 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.scheduling.quartz.CronTriggerFactoryBean;
 import org.springframework.scheduling.quartz.JobDetailFactoryBean;
 import org.springframework.scheduling.quartz.SchedulerFactoryBean;
+import org.springframework.scheduling.quartz.SpringBeanJobFactory;
 import ru.timestop.video.generator.scheduler.quartz.job.SendTriggerToCheckStatusJob;
 import ru.timestop.video.generator.scheduler.quartz.job.SendTriggerToGenerateVideosJob;
 import ru.timestop.video.generator.scheduler.quartz.job.SendTriggerToUploadCallbackListJob;
 
-import java.util.Arrays;
 
 /**
  * @author t.i.m.e.s.t.o.p@mail.ru
@@ -27,11 +28,8 @@ import java.util.Arrays;
 public class QuartzContext {
     private static final Logger LOGGER = LoggerFactory.getLogger(SendTriggerToUploadCallbackListJob.class);
 
-    @Autowired
-    private ApplicationContext applicationContext;
-
     @Bean(name = "SendTriggerToUploadCallbackListJob")
-    public JobDetailFactoryBean jobDetailFireUploadDataToGoogle() {
+    public JobDetailFactoryBean jobDetailFireUploadDataToGoogle(ApplicationContext applicationContext) {
         JobDetailFactoryBean jobDetailFactory = new JobDetailFactoryBean();
         jobDetailFactory.setJobClass(SendTriggerToUploadCallbackListJob.class);
         jobDetailFactory.setDurability(true);
@@ -40,7 +38,7 @@ public class QuartzContext {
     }
 
     @Bean(name = "SendTriggerToGenerateVideosJob")
-    public JobDetailFactoryBean jobDetailFireGenerateVideosByGoogleData() {
+    public JobDetailFactoryBean jobDetailFireGenerateVideosByGoogleData(ApplicationContext applicationContext) {
         JobDetailFactoryBean jobDetailFactory = new JobDetailFactoryBean();
         jobDetailFactory.setJobClass(SendTriggerToGenerateVideosJob.class);
         jobDetailFactory.setDurability(true);
@@ -49,7 +47,7 @@ public class QuartzContext {
     }
 
     @Bean(name = "SendTriggerToCheckStatusJob")
-    public JobDetailFactoryBean SendTriggerToCheckStatusJob() {
+    public JobDetailFactoryBean SendTriggerToCheckStatusJob(ApplicationContext applicationContext) {
         JobDetailFactoryBean jobDetailFactory = new JobDetailFactoryBean();
         jobDetailFactory.setJobClass(SendTriggerToCheckStatusJob.class);
         jobDetailFactory.setDurability(true);
@@ -86,16 +84,17 @@ public class QuartzContext {
         trigger.setDescription("FireCheckStatus");
         return trigger;
     }
-
     @Bean
-    public SchedulerFactoryBean scheduler(Trigger... triggers) {
+    public SpringBeanJobFactory springBeanJobFactory(ApplicationContext applicationContext) {
+        SpringBeanJobFactory jobFactory = new SpringBeanJobFactory();
+        jobFactory.setApplicationContext(applicationContext);
+        return jobFactory;
+    }
+    @Bean
+    public SchedulerFactoryBean scheduler(SpringBeanJobFactory springBeanJobFactory, Trigger... triggers) {
         SchedulerFactoryBean schedulerFactory = new SchedulerFactoryBean();
         schedulerFactory.setConfigLocation(new ClassPathResource("quartz.properties"));
-        schedulerFactory.setJobFactory(new SimpleJobFactory());
-        JobDetail[] jobDetails = (JobDetail[]) Arrays.stream(triggers)
-                .map(trigger -> (JobDetail) trigger.getJobDataMap().get("jobDetail"))
-                .toArray();
-        schedulerFactory.setJobDetails(jobDetails);
+        schedulerFactory.setJobFactory(springBeanJobFactory);
         schedulerFactory.setTriggers(triggers);
         schedulerFactory.setApplicationContextSchedulerContextKey("applicationContext");
         return schedulerFactory;

@@ -31,7 +31,7 @@ public class DemoEntity implements Serializable {
 
     @Nonnull
     @JoinColumn(name = "template_id", referencedColumnName = "id")
-    @ManyToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.EAGER)
     private TemplateEntity template;
 
     public long getId() {

@@ -51,7 +51,7 @@ public class TemplateServiceImpl implements TemplateService {
         try {
             templateEntity = this.templateRepository.save(templateEntity);
             this.sourceVideoStorageService.saveSourceVideo(templateEntity.getId(), stream);
-            templateEntity.setStatus("Loading was complited.");
+            templateEntity.setStatus("Loading was completed.");
             this.audioTranscriptionSender.send(templateEntity.getId());
             return this.templateRepository.saveAndFlush(templateEntity);
         } catch (Exception e) {
@@ -79,7 +79,7 @@ public class TemplateServiceImpl implements TemplateService {
 
     @Override
     public TemplateEntity getTask(UUID uuid) {
-        return this.templateRepository.getReferenceById(uuid);
+        return this.templateRepository.findById(uuid).orElseThrow();
     }
 
 

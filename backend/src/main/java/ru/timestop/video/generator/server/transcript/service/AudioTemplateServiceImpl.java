@@ -34,7 +34,8 @@ public class AudioTemplateServiceImpl implements AudioTemplateService {
                 .setTemplate(template)
                 .setChosen(audioTemplate.choosed())
                 .setMapping(audioTemplate.mapping());
-        return audioTemplateRepository.save(transcriptEntity);
+        this.audioTemplateRepository.deleteByTemplate(template);
+        return this.audioTemplateRepository.save(transcriptEntity);
     }
 
     @Override

@@ -5,7 +5,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import ru.timestop.video.generator.server.demo.DemoService;
 import ru.timestop.video.generator.server.template.TemplateService;
 import ru.timestop.video.generator.server.template.entity.TemplateEntity;
 
@@ -24,6 +23,7 @@ public class TemplateController {
     public TemplateController(@Autowired TemplateService templateService) {
         this.templateService = templateService;
     }
+
     @PostMapping(value = "/template/upload")
     public TemplateEntity createTemplate(@RequestParam(name = "file") MultipartFile file) throws IOException {
         return this.templateService.createTask(file.getOriginalFilename(), file.getInputStream());

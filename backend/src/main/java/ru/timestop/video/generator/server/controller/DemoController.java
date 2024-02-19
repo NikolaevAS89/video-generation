@@ -1,5 +1,9 @@
 package ru.timestop.video.generator.server.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +20,7 @@ import java.io.IOException;
 @RestController
 @CrossOrigin
 public class DemoController {
+    private static final Logger LOGGER = LoggerFactory.getLogger(DemoController.class);
     private final DemoService demoService;
 
     public DemoController(@Autowired DemoService demoService) {
@@ -28,9 +33,10 @@ public class DemoController {
     }
 
     @GetMapping(value = "/demo")
-    public ResponseEntity<TemplateEntity> getDemo() {
+    public ResponseEntity<TemplateEntity> getDemo() throws JsonProcessingException {
+        TemplateEntity entity = this.demoService.getDemo();
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(this.demoService.getDemo());
+                .body(entity);
     }
 }

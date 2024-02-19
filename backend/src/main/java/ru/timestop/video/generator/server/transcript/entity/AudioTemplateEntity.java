@@ -25,7 +25,7 @@ public class AudioTemplateEntity implements Serializable {
 
     @Nonnull
     @JoinColumn(name = "template_id", referencedColumnName = "id")
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     private TemplateEntity template;
 
     @Column(name = "mapping", columnDefinition = "jsonb", nullable = false)

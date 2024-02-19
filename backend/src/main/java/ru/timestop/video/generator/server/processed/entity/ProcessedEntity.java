@@ -24,7 +24,7 @@ public class ProcessedEntity implements Serializable {
 
     @Nonnull
     @JoinColumn(name = "template_id", referencedColumnName = "id")
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     private TemplateEntity template;
 
     @Nullable

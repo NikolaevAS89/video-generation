@@ -65,11 +65,11 @@ services:
     volumes:
       - ./volumes/server:/storage
     depends_on:
-      - db
       - liquibase
+      - db
       - transcription
     ports:
-      - 8080:8080
+      - 8082:8080
     environment:
       - POSTGRES_DB=${POSTGRES_DB}
       - POSTGRES_USER=${POSTGRES_USER}
@@ -85,6 +85,7 @@ services:
     build: caller-log/
     depends_on:
       - liquibase
+      - db
     environment:
       - POSTGRES_DB=${POSTGRES_DB}
       - POSTGRES_USER=${POSTGRES_USER}

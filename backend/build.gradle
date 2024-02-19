@@ -30,7 +30,7 @@ dependencies {
     implementation 'org.springframework.integration:spring-integration-jdbc'
     implementation 'org.springframework.integration:spring-integration-jpa'
     implementation 'io.hypersistence:hypersistence-utils-hibernate-60:3.6.0'
-
+    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-hibernate5-jakarta:2.15.1'
     implementation 'io.springfox:springfox-boot-starter:3.0.0'
     implementation 'io.jsonwebtoken:jjwt:0.9.1'
 

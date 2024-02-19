@@ -12,7 +12,6 @@ import ru.timestop.video.generator.server.template.TemplateService;
 import ru.timestop.video.generator.server.template.entity.TemplateEntity;
 
 import java.io.InputStream;
-import java.util.UUID;
 
 /**
  * @author t.i.m.e.s.t.o.p@mail.ru
@@ -41,11 +40,8 @@ public class DemoServiceImpl implements DemoService {
 
     @Override
     public TemplateEntity getDemo() {
-        UUID templateUuid = demoRepository.findFirstByOrderByIdDesc()
+        return demoRepository.findFirstByOrderByIdDesc()
                 .orElseThrow()
-                .getTemplate()
-                .getId();
-        LOGGER.info("Demo is {}", templateUuid.toString());
-        return this.templateService.getTask(templateUuid);
+                .getTemplate();
     }
 }
