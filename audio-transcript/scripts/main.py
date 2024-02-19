@@ -1,10 +1,13 @@
 import json
-import time
 import os
 import sys
+import time
+
 import pika
 from pika.exceptions import AMQPConnectionError
 from pika.exchange_type import ExchangeType
+
+from rabbitmq import TranscriptionService
 from storage_lib import StorageService, StorageManipulatorService
 
 # RambbitMQ Settings
@@ -18,13 +21,11 @@ exchange_name = str(os.getenv("EXCHANGE_NAME"))
 routing_key_in = str(os.getenv("ROUTING_KEY_IN"))
 routing_key_out = str(os.getenv("ROUTING_KEY_OUT"))
 
-
 # Faster-Whisper Settings
 model_size = str(os.getenv("MODEL_SIZE"))
 device = str(os.getenv("DEVICE"))
 compute_type = str(os.getenv("COMPUTE_TYPE"))
 beam_size = int(os.getenv("BEAM_SIZE"))
-
 
 # Directories
 current_directory = os.path.dirname(os.path.realpath(__file__))
@@ -33,29 +34,39 @@ grandparent_directory = os.path.dirname(parent_directory)
 if grandparent_directory not in sys.path:
     sys.path.append(grandparent_directory)
 
-
 credentials = pika.credentials.PlainCredentials(username=username,
                                                 password=password)
 
+
 def make_connection(host, cred):
-    for count in range(0,10):
+    for count in range(0, 10):
         try:
             print(f'Try to connect to RabbitMQ {count}')
             connection = pika.BlockingConnection(pika.ConnectionParameters(host=host,
                                                                            credentials=cred))
             return connection
         except AMQPConnectionError as e:
-            if count>9:
+            if count > 9:
                 raise e
             else:
                 time.sleep(15)
 
+
 connection = make_connection(rabbit_host, credentials)
+
 storage = StorageService(path=grandparent_directory)
-manipulator = StorageManipulatorService(storage = storage, model_size=model_size, device=device, compute_type=compute_type, beam_size=beam_size)
+
+transcribtion_service = TranscriptionService(model_size=model_size,
+                                             device=device,
+                                             compute_type=compute_type,
+                                             beam_size=beam_size)
+
+manipulator = StorageManipulatorService(storage=storage,
+                                        model=transcribtion_service,
+                                        beam_size=beam_size)
+
 
 def callback(ch, method, properties, body):
-
     uuid = body.decode("utf-8")
     manipulator.split_source(uuid=uuid)
     answer = manipulator.generate_subs(uuid=uuid)
@@ -63,7 +74,8 @@ def callback(ch, method, properties, body):
     ch.basic_publish(exchange=exchange_name,
                      routing_key=routing_key_out,
                      body=json.dumps(answer).encode("UTF-8"))
-    
+
+
 if __name__ == '__main__':
     channel = connection.channel()
     channel.exchange_declare(exchange=exchange_name,
