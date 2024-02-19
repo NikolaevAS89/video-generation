@@ -26,9 +26,9 @@ service_account_path = str(os.getenv("GOOGLE_SERVICE_ACCOUNT"))
 
 SPREADSHEET_ID = str(os.getenv("SPREADSHEET_ID"))
 
-HOST = 'http://callback/'
+HOST = 'http://callback:8080/'
 
-SERVER_HOST = 'http://server/'
+SERVER_HOST = 'http://server:8080/'
 
 
 credentials = pika.credentials.PlainCredentials(username=username,
@@ -54,7 +54,7 @@ connection = make_connection(rabbit_host, credentials)
 def callback(ch, method, properties, body):
 
 
-    rabbit_message = body.decode("utf-8")
+    rabbit_message = json.loads(body.decode("utf-8"))
 
     if rabbit_message['action'] == 'upload':
 
@@ -78,9 +78,8 @@ def callback(ch, method, properties, body):
 
         approved_data = gsheets_uploader_service.request_approved_data_to_generation()
 
-        json_data = {'values':approved_data}
 
-        response = requests.post(SERVER_HOST + 'generator/list/',json=json_data)
+        response = requests.post(SERVER_HOST + 'generator/list',json=approved_data)
 
         response_json = response.json() # response_json = [{'id': 1, 'uuid':'455a-24s4-b532666','status':'in process'}]
 
@@ -97,9 +96,8 @@ def callback(ch, method, properties, body):
 
         approved_data = gsheets_uploader_service.request_approved_data_to_generation()
 
-        json_data = {'values':approved_data}
 
-        response = requests.post(SERVER_HOST + 'generator/list/status/',json=json_data)
+        response = requests.post(SERVER_HOST + 'generator/list/status',json=approved_data)
 
         response_json = response.json() # response_json = [{'id': 1, 'uuid':'455a-24s4-b532666','status':'in process','uuid_video':'111'}]
         

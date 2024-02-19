@@ -1,0 +1,444 @@
+{
+	"info": {
+		"_postman_id": "4bc8b30c-895b-4ce4-b22e-1df29fdde36b",
+		"name": "videogeneration",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "19228600"
+	},
+	"item": [
+		{
+			"name": "upload video",
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {
+					"accept-encoding": true
+				}
+			},
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "file",
+							"contentType": "",
+							"type": "file",
+							"src": "/C:/Users/aniko/Downloads/Musetti_all.mp4"
+						}
+					]
+				},
+				"url": {
+					"raw": "localhost:8080/videos/upload",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"videos",
+						"upload"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get status",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/status/d0bbaec2-78b2-42fc-9196-702257501f03",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"status",
+						"d0bbaec2-78b2-42fc-9196-702257501f03"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get text",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8082/transcript/7e1428b5-ca12-4e35-920f-0aa12e694e5a/text",
+					"host": [
+						"localhost"
+					],
+					"port": "8082",
+					"path": [
+						"transcript",
+						"7e1428b5-ca12-4e35-920f-0aa12e694e5a",
+						"text"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "send choose",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"choosed\":[0,1,0,0,0,0,0,0,0,0],\"mapping\":{\"name\":1}}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8082/transcript/9dfa368b-a5ef-4629-9e95-b6ed6080c0d8/chosen",
+					"host": [
+						"localhost"
+					],
+					"port": "8082",
+					"path": [
+						"transcript",
+						"9dfa368b-a5ef-4629-9e95-b6ed6080c0d8",
+						"chosen"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get_choosen",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8082/transcript/9dfa368b-a5ef-4629-9e95-b6ed6080c0d8/chosen",
+					"host": [
+						"localhost"
+					],
+					"port": "8082",
+					"path": [
+						"transcript",
+						"9dfa368b-a5ef-4629-9e95-b6ed6080c0d8",
+						"chosen"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "/demo",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8082/demo",
+					"host": [
+						"localhost"
+					],
+					"port": "8082",
+					"path": [
+						"demo"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "/demo/upload",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "file",
+							"type": "file",
+							"src": "/D:/java/video-generation/backend/init_demo.mp4"
+						}
+					]
+				},
+				"url": {
+					"raw": "localhost:8082/demo/upload",
+					"host": [
+						"localhost"
+					],
+					"port": "8082",
+					"path": [
+						"demo",
+						"upload"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "/template/{uuid}",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8082/template/394e9e4b-d2f9-4584-9912-712a049e5de1",
+					"host": [
+						"localhost"
+					],
+					"port": "8082",
+					"path": [
+						"template",
+						"394e9e4b-d2f9-4584-9912-712a049e5de1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "/template",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8082/template",
+					"host": [
+						"localhost"
+					],
+					"port": "8082",
+					"path": [
+						"template"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "/transcript/{template_id}/text",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8082/transcript/394e9e4b-d2f9-4584-9912-712a049e5de1/text",
+					"host": [
+						"localhost"
+					],
+					"port": "8082",
+					"path": [
+						"transcript",
+						"394e9e4b-d2f9-4584-9912-712a049e5de1",
+						"text"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "/transcript/{template_id}/chosen",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8082/transcript/394e9e4b-d2f9-4584-9912-712a049e5de1/chosen",
+					"host": [
+						"localhost"
+					],
+					"port": "8082",
+					"path": [
+						"transcript",
+						"394e9e4b-d2f9-4584-9912-712a049e5de1",
+						"chosen"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "/transcript/394e9e4b-d2f9-4584-9912-712a049e5de1/chosen",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"choosed\": [0,0,0,1,0,0,2,0,3],\r\n    \"mapping\": \r\n    {\r\n        \"Name\": 1,\r\n        \"Sum\": 2,\r\n        \"Other\": 3\r\n    }\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8082/transcript/394e9e4b-d2f9-4584-9912-712a049e5de1/chosen",
+					"host": [
+						"localhost"
+					],
+					"port": "8082",
+					"path": [
+						"transcript",
+						"394e9e4b-d2f9-4584-9912-712a049e5de1",
+						"chosen"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "/transcript/{template_uuid}/chosen",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8082/transcript/394e9e4b-d2f9-4584-9912-712a049e5de1/chosen",
+					"host": [
+						"localhost"
+					],
+					"port": "8082",
+					"path": [
+						"transcript",
+						"394e9e4b-d2f9-4584-9912-712a049e5de1",
+						"chosen"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "/callback",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"phone\": \"+79131444646\",\r\n    \"email\": \"a@mail.ru\",\r\n    \"name\": \"Another man\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8090/callback",
+					"host": [
+						"localhost"
+					],
+					"port": "8090",
+					"path": [
+						"callback"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "/callback/demo",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"phone\": \"+79131444646\",\r\n    \"email\": \"a@mail.ru\",\r\n    \"name\": \"Another man\",\r\n    \"templateId\": \"394e9e4b-d2f9-4584-9912-712a049e5de1\",\r\n    \"words\": {\r\n        \"name\":\"Alex\",\r\n        \"sum\":\"big money\"\r\n        }\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8090/callback/demo",
+					"host": [
+						"localhost"
+					],
+					"port": "8090",
+					"path": [
+						"callback",
+						"demo"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "/callback/data",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8090/callback/data",
+					"host": [
+						"localhost"
+					],
+					"port": "8090",
+					"path": [
+						"callback",
+						"data"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "/generator/list",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "[\r\n    {\r\n        \"id\": \"1\",\r\n        \"uuid\": \"394e9e4b-d2f9-4584-9912-712a049e5de1\",\r\n        \"words\": {\r\n            \"Name\": \"BadMan\",\r\n            \"second\": \"GoodMan\"\r\n        }\r\n    }\r\n]",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8082/generator/list",
+					"host": [
+						"localhost"
+					],
+					"port": "8082",
+					"path": [
+						"generator",
+						"list"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "/generator/list/status",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "[\r\n    {\r\n        \"id\": \"1\",\r\n        \"uuid\": \"93fe8892-f1f9-4721-9359-0733739b6e1e\"\r\n    }\r\n]",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8082/generator/list/status",
+					"host": [
+						"localhost"
+					],
+					"port": "8082",
+					"path": [
+						"generator",
+						"list",
+						"status"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
