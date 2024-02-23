@@ -1,15 +1,15 @@
 import json
+import logging
 import os
-import sys
 import time
 
 import pika
 from pika.exceptions import AMQPConnectionError
 from pika.exchange_type import ExchangeType
 
-from rabbitmq import TranscriptionService
-from storage_lib import StorageService, StorageManipulatorService
+from service import TranscriptionService, StoragePathService, MediaService
 
+LOGGER = logging.getLogger(__name__)
 # RambbitMQ Settings
 username = str(os.getenv("RABBITMQ_DEFAULT_USER"))
 password = str(os.getenv("RABBITMQ_DEFAULT_PASS"))
@@ -28,12 +28,16 @@ compute_type = str(os.getenv("COMPUTE_TYPE"))
 beam_size = int(os.getenv("BEAM_SIZE"))
 
 # Directories
-current_directory = os.path.dirname(os.path.realpath(__file__))
-parent_directory = os.path.dirname(current_directory)
-grandparent_directory = os.path.dirname(parent_directory)
-if grandparent_directory not in sys.path:
-    sys.path.append(grandparent_directory)
+root_storage_path = str(os.getenv("STORAGE_PATH"))
 
+# Init
+storage_path_service = StoragePathService(root_path=root_storage_path)
+transcription_service = TranscriptionService(storage_path_service=storage_path_service,
+                                             model_size=model_size,
+                                             device=device,
+                                             compute_type=compute_type,
+                                             beam_size=beam_size)
+media_service = MediaService(storage=storage_path_service)
 credentials = pika.credentials.PlainCredentials(username=username,
                                                 password=password)
 
@@ -54,23 +58,11 @@ def make_connection(host, cred):
 
 connection = make_connection(rabbit_host, credentials)
 
-storage = StorageService(path=grandparent_directory)
-
-transcribtion_service = TranscriptionService(model_size=model_size,
-                                             device=device,
-                                             compute_type=compute_type,
-                                             beam_size=beam_size)
-
-manipulator = StorageManipulatorService(storage=storage,
-                                        model=transcribtion_service,
-                                        beam_size=beam_size)
-
 
 def callback(ch, method, properties, body):
     uuid = body.decode("utf-8")
-    manipulator.split_source(uuid=uuid)
-    answer = manipulator.generate_subs(uuid=uuid)
-
+    media_service.split_source(uuid=uuid)
+    answer = transcription_service.generate_subs(uuid=uuid)
     ch.basic_publish(exchange=exchange_name,
                      routing_key=routing_key_out,
                      body=json.dumps(answer).encode("UTF-8"))
@@ -96,4 +88,13 @@ if __name__ == '__main__':
                           auto_ack=True,
                           on_message_callback=callback)
     print(' [*] Waiting for messages. To exit press CTRL+C')
-    channel.start_consuming()
+    while True:
+        try:
+            if channel.is_closed:
+                if connection.is_closed:
+                    connection = make_connection(rabbit_host, credentials)
+                channel = connection.channel()
+            channel.start_consuming()
+        except Exception as e:
+            LOGGER.error(f"{str(e)}")
+            time.sleep(15)

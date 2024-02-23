@@ -53,6 +53,7 @@ services:
       - DEVICE=${DEVICE}
       - COMPUTE_TYPE=${COMPUTE_TYPE}
       - BEAM_SIZE=${BEAM_SIZE}
+      - STORAGE_PATH=/storage
     deploy:
       resources:
         reservations:
