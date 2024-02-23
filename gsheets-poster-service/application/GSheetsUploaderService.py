@@ -212,7 +212,7 @@ class GSheetsUploader:
 
         for entrie in last_sheet_content:
 
-            if len(entrie) > 6 and entrie[6].strip().upper() == 'TRUE' and entrie[7] != 'Processed':
+            if len(entrie) > 6 and entrie[6].strip().upper() == 'TRUE' and entrie[7].lower().strip() != 'done':
 
                 approved_data = {'id':entrie[0], 'uuid':entrie[4]}
 
