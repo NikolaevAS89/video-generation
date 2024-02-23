@@ -198,4 +198,33 @@ class GSheetsUploader:
         return approved_content
 
 
+    def request_approved_data_to_status_check(self):
+
+        service = build('sheets', 'v4', credentials=self.creds)
+
+        sheets = service.spreadsheets()
+
+        page_name = self.get_last_sheet_title(sheets=sheets)
+
+        last_sheet_content = self.get_sheet_content(sheets=sheets, page_name=page_name)
+
+        approved_content = []
+
+        for entrie in last_sheet_content:
+
+            if len(entrie) > 6 and entrie[6].strip().upper() == 'TRUE':
+
+                if len(entrie) > 7:
+                    
+                    continue
+
+                else:
+
+                    approved_data = {'id':entrie[0], 'uuid':entrie[4])}
+
+                    approved_content.append(approved_data)
+        
+        return approved_content
+
+
 
