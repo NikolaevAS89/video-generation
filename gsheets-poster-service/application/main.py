@@ -97,7 +97,7 @@ def callback(ch, method, properties, body):
         approved_data = gsheets_uploader_service.request_approved_data_to_status_check()
 
 
-        response = requests.post(SERVER_HOST + 'generator/list/status',json=approved_data)
+        response = requests.get(SERVER_HOST + 'generator/list/status',json=approved_data)
 
         response_json = response.json() # response_json = [{'id': '1', 'uuid':'455a-24s4-b532666','status':'in process'}]
         
