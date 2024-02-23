@@ -87,7 +87,7 @@ def callback(ch, method, properties, body):
 
         for entry in response_json:
 
-            status_to_update[entry['id']] = [entry['status'], entry['uuid']
+            status_to_update[entry['id']] = [entry['status'], entry['uuid']]
 
         gsheets_uploader_service.update_video_statuses(status_to_update)
             
