@@ -94,7 +94,7 @@ def callback(ch, method, properties, body):
 
     elif rabbit_message['action'] == 'checkStatus':
 
-        approved_data = gsheets_uploader_service.request_approved_data_to_generation()
+        approved_data = gsheets_uploader_service.request_approved_data_to_status_check()
 
 
         response = requests.post(SERVER_HOST + 'generator/list/status',json=approved_data)
