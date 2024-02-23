@@ -220,7 +220,7 @@ class GSheetsUploader:
 
                 else:
 
-                    approved_data = {'id':entrie[0], 'uuid':entrie[4])}
+                    approved_data = {'id':entrie[0], 'uuid':entrie[4]}
 
                     approved_content.append(approved_data)
         
