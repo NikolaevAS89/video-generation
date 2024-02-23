@@ -78,7 +78,6 @@ def callback(ch, method, properties, body):
 
         approved_data = gsheets_uploader_service.request_approved_data_to_generation()
 
-
         response = requests.post(SERVER_HOST + 'generator/list',json=approved_data)
 
         response_json = response.json() # response_json = [{'id': '1', 'uuid':'455a-24s4-b532666','status':'in process'}]
@@ -96,11 +95,10 @@ def callback(ch, method, properties, body):
 
         approved_data = gsheets_uploader_service.request_approved_data_to_status_check()
 
-
         response = requests.post(SERVER_HOST + 'generator/list/status',json=approved_data)
 
         response_json = response.json() # response_json = [{'id': '1', 'uuid':'455a-24s4-b532666','status':'in process'}]
-        
+
         status_to_update = {}
 
         for entry in response_json:
@@ -108,6 +106,7 @@ def callback(ch, method, properties, body):
             status_to_update[entry['id']] = [entry['status'], entry['uuid']]
 
         gsheets_uploader_service.update_video_statuses(status_to_update)
+
 
 if __name__ == '__main__':
 
