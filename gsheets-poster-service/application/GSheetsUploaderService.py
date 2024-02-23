@@ -86,11 +86,11 @@ class GSheetsUploader:
 
                 self.create_new_page(sheets=sheets,page_name=page_name)
 
-                sheet_content = [['id', 'phone', 'email', 'FullName', 'uuid_video_generation_task', 'words', 'ManualMark','status_of_processing', 'uuid_video_demo']]
+                sheet_content = [['id', 'phone', 'email', 'name', 'templateId', 'words', 'ManualMark','status_of_processing', 'uuid_video_demo']]
 
         except KeyError:
 
-                sheet_content = [['id', 'phone', 'email', 'FullName', 'uuid_of_video_generation_task', 'words', 'ManualMark', 'status_of_processing', 'uuid_video_demo']]
+                sheet_content = [['id', 'phone', 'email', 'name', 'templateId', 'words', 'ManualMark', 'status_of_processing', 'uuid_video_demo']]
 
         return sheet_content
 
@@ -148,7 +148,7 @@ class GSheetsUploader:
         
 
             try:
-                status = statuses.get(entry[4])
+                status = statuses.get(entry[0])
 
                 if len(entry) > 7:
 
@@ -199,22 +199,3 @@ class GSheetsUploader:
 
 
 
-
-
-# def main():
-# 
-#     SPREADSHEET_ID = '1ukZdHp8_Qsbksyyasl-8on6ujFSQ1B35Yf07mek6IqM'
-# 
-#     message = {'id':'1',
-#                'phone':'153234225',
-#                'email':'zhokaogurca@gmail.com',
-#                'FullName':['word1', 'word2'],
-#                'uuid_video_demo':'123e-241e'}
-# 
-#     gdrive_uploader_service = GSheetsUploader(spreadsheet_id=SPREADSHEET_ID)
-# 
-#     gdrive_uploader_service.update_video_statuses(statuses={'123e-241e':['1', '2'], '1233e-231e':['2', '2']})
-# 
-# 
-# if __name__ == "__main__":
-#     main()
