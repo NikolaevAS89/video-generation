@@ -183,7 +183,7 @@ class GSheetsUploader:
 
         for entrie in last_sheet_content:
 
-            if len(entrie) > 6 and entrie[6].upper() == 'TRUE':
+            if len(entrie) > 6 and entrie[6].strip().upper() == 'TRUE':
 
                 if len(entrie) > 7:
                     
