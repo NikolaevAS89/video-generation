@@ -81,13 +81,13 @@ def callback(ch, method, properties, body):
 
         response = requests.post(SERVER_HOST + 'generator/list',json=approved_data)
 
-        response_json = response.json() # response_json = [{'id': 1, 'uuid':'455a-24s4-b532666','status':'in process'}]
+        response_json = response.json() # response_json = [{'id': '1', 'uuid':'455a-24s4-b532666','status':'in process'}]
 
         status_to_update = {}
 
         for entry in response_json:
 
-            status_to_update[entry['uuid']] = [entry['status']]
+            status_to_update[entry['id']] = [entry['status'], entry['uuid']
 
         gsheets_uploader_service.update_video_statuses(status_to_update)
             
@@ -99,13 +99,13 @@ def callback(ch, method, properties, body):
 
         response = requests.post(SERVER_HOST + 'generator/list/status',json=approved_data)
 
-        response_json = response.json() # response_json = [{'id': 1, 'uuid':'455a-24s4-b532666','status':'in process','uuid_video':'111'}]
+        response_json = response.json() # response_json = [{'id': '1', 'uuid':'455a-24s4-b532666','status':'in process'}]
         
         status_to_update = {}
 
         for entry in response_json:
 
-            status_to_update[entry['uuid']] = [entry['status'], entry['uuid_video']]
+            status_to_update[entry['id']] = [entry['status'], entry['uuid']
 
         gsheets_uploader_service.update_video_statuses(status_to_update)
 
