@@ -195,7 +195,7 @@ class GSheetsUploader:
 
                     approved_content.append(approved_data)
         
-        return (approved_content, last_sheet_content)
+        return approved_content
 
 
 
