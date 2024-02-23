@@ -65,7 +65,7 @@ def callback(ch, method, properties, body):
         values_to_add = response.json() 
 
         """ values_to_add - массив данных типа [
-                                                {'phone':'89232223334','email':'myemail@email.com', ''FullName': 'Ivan Ivanov', 'uuid':'455a-24s4-b532', "words":'{"word1":X,
+                                                {'phone':'89232223334','email':'myemail@email.com', ''name': 'Ivan Ivanov', 'uuid':'455a-24s4-b532', "words":'{"word1":X,
                                                                                                                                     "word2":Y}'},
                                                 {...},
                                                 ]"""
