@@ -14,7 +14,7 @@ class StoragePathService:
         return f'{self._root_path_}/{uuid}/source'
 
     def get_audio_transcription_path(self, uuid: str):
-        return f'{self._root_path_}/{uuid}/audit'
+        return f'{self._root_path_}/{uuid}/audio.mp3'
 
 
 class TranscriptionService:
