@@ -214,7 +214,7 @@ class GSheetsUploader:
 
             if len(entrie) >= 7 and entrie[6].strip().upper() == 'TRUE':
 
-                if len(entrie) > 7 and entrie[7].strip().lower() == 'done':
+                if len(entrie) < 9 OR entrie[7].strip().lower() == 'done':
 
                     continue
 
