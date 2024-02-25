@@ -59,7 +59,7 @@ public class QuartzContext {
     public CronTriggerFactoryBean triggerFireUploadDataToGoogle(@Qualifier("SendTriggerToUploadCallbackListJob") JobDetail job) {
         CronTriggerFactoryBean trigger = new CronTriggerFactoryBean();
         trigger.setJobDetail(job);
-        trigger.setCronExpression("0 0 6 * * ?"); // TODO
+        trigger.setCronExpression("0 40 20 * * ?"); // TODO
         trigger.setBeanName("FireUploadDataToGoogleTrigger");
         trigger.setDescription("FireUploadDataToGoogle");
         return trigger;
@@ -69,7 +69,7 @@ public class QuartzContext {
     public CronTriggerFactoryBean triggerFireGenerateVideosByGoogleData(@Qualifier("SendTriggerToGenerateVideosJob") JobDetail job) {
         CronTriggerFactoryBean trigger = new CronTriggerFactoryBean();
         trigger.setJobDetail(job);
-        trigger.setCronExpression("0 0 20 * * ?"); // TODO
+        trigger.setCronExpression("0 50 20 * * ?"); // TODO
         trigger.setBeanName("FireGenerateVideosByGoogleDataTrigger");
         trigger.setDescription("FireGenerateVideosByGoogleData");
         return trigger;

@@ -1,15 +1,13 @@
-import logging
 import json
-import time
+import logging
 import os
-import sys
+import time
+
 import pika
 from pika.exceptions import AMQPConnectionError
 from pika.exchange_type import ExchangeType
-from GSheetsUploaderService import GSheetsUploader
-import requests
-from datetime import datetime
-from requests.auth import HTTPBasicAuth
+
+from service import MessageConsumeService
 
 # RambbitMQ Settings
 username = str(os.getenv("RABBITMQ_DEFAULT_USER"))
@@ -24,120 +22,46 @@ routing_key = str(os.getenv("UPLOADER_ROUTING_KEY"))
 
 service_account_path = str(os.getenv("GOOGLE_SERVICE_ACCOUNT"))
 
-
 SPREADSHEET_ID = str(os.getenv("SPREADSHEET_ID"))
-
-HOST = 'http://callback:8091/'
-
-SERVER_HOST = 'http://server:8080/'
 
 # Логи
 logging.basicConfig(level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(message)s')
 
-
 credentials = pika.credentials.PlainCredentials(username=username,
                                                 password=password)
 
-gsheets_uploader_service = GSheetsUploader(spreadsheet_id = SPREADSHEET_ID, service_account_file=service_account_path)
 
 def make_connection(host, cred):
-    for count in range(0,10):
+    for count in range(0, 10):
         try:
-            print(f'Try to connect to RabbitMQ {count}')
+            logging.info(f'Try to connect to RabbitMQ {count}')
             connection = pika.BlockingConnection(pika.ConnectionParameters(host=host,
                                                                            credentials=cred))
             return connection
         except AMQPConnectionError as e:
-            if count>9:
+            if count > 9:
                 raise e
             else:
                 time.sleep(15)
 
+
 connection = make_connection(rabbit_host, credentials)
 
+
 def callback(ch, method, properties, body):
+    try:
+        service = MessageConsumeService(spreadsheet_id=SPREADSHEET_ID,
+                                        service_account_file=service_account_path)
+        rabbit_message = json.loads(body.decode("utf-8"))
 
-
-    rabbit_message = json.loads(body.decode("utf-8"))
-
-    if rabbit_message['action'] == 'upload':
-
-        page_name = datetime.now().strftime('%Y-%m-%d')
-
-        response = requests.get(HOST + 'callback/data')
-
-        if response.status_code == 200:
-
-            values_to_add_original = response.json()
-
-            value_to_add_as_strings = []
-
-            for element in values_to_add_original:
-                element['words'] = str(element['words'])
-                value_to_add_as_strings.append(element)
-
-            """ values_to_add - массив данных типа [
-                                                    {'phone':'89232223334','email':'myemail@email.com', ''name': 'Ivan Ivanov', 'uuid':'455a-24s4-b532', "words":'{"word1":X,
-                                                                                                                                        "word2":Y}'},
-                                                    {...},
-                                                    ]"""
-
-
-            gsheets_uploader_service.update_google_sheet(values_to_add=value_to_add_as_strings, page_name = page_name)
-
-            logging.info(f"New entries uploaded")
-
-        else:
-            logging.error(f"Failed to get new entries. Status code: {response.status_code}, Response: {response.text}")
-
-
-    elif rabbit_message['action'] == 'generate':
-
-        approved_data = gsheets_uploader_service.request_approved_data_to_generation()
-
-        response = requests.post(SERVER_HOST + 'generator/list',json=approved_data)
-
-        if response.status_code == 200:
-        
-            response_json = response.json() # response_json = [{'id': '1', 'uuid':'455a-24s4-b532666','status':'in process'}]
-
-            status_to_update = {}
-
-            for entry in response_json:
-
-                status_to_update[entry['id']] = [entry['status'], entry['uuid']]
-
-            gsheets_uploader_service.update_video_statuses(status_to_update)
-
-            logging.info(f"Generation uuid uploaded")
-
-        else:
-
-            logging.error(f"Failed to send entries to generation. Status code: {response.status_code}, Response: {response.text}")
-
-
-    elif rabbit_message['action'] == 'checkStatus':
-
-        approved_data = gsheets_uploader_service.request_approved_data_to_status_check()
-            
-        response = requests.get(SERVER_HOST + 'generator/list/status',json=approved_data)
-
-        if response.status_code == 200:
-
-            response_json = response.json() # response_json = [{'id': '1', 'uuid':'455a-24s4-b532666','status':'in process'}]
-
-            status_to_update = {}
-
-            for entry in response_json:
-
-                status_to_update[entry['id']] = [entry['status'], entry['uuid']]
-
-            gsheets_uploader_service.update_video_statuses(status_to_update)
-
-            logging.info(f"UUID generation statuses updated")
-
-        else:
-            logging.error(f"Failed to check status with server. Status code: {response.status_code}, Response: {response.text}")
+        if rabbit_message['action'] == 'upload':
+            service.upload()
+        elif rabbit_message['action'] == 'generate':
+            service.generate()
+        elif rabbit_message['action'] == 'checkStatus':
+            service.update_status()
+    except Exception as e:
+        logging.error(e, exc_info=True)
 
 
 if __name__ == '__main__':
@@ -156,5 +80,13 @@ if __name__ == '__main__':
                           auto_ack=True,
                           on_message_callback=callback)
     print(' [*] Waiting for messages. To exit press CTRL+C')
-
-    channel.start_consuming()
+    while True:
+        try:
+            if channel.is_closed:
+                if connection.is_closed:
+                    connection = make_connection(rabbit_host, credentials)
+                channel = connection.channel()
+            channel.start_consuming()
+        except Exception as e:
+            logging.error(f"{str(e)}")
+            time.sleep(5)

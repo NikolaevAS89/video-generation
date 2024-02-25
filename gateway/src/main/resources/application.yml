@@ -14,7 +14,7 @@ urls:
   transcript:
     url: http://server:8080
   callback:
-    url: http://callback:8091
+    url: http://callback:8080
 
 basic-auth:
   name: operator

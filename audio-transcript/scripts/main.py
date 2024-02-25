@@ -8,8 +8,8 @@ from pika.exceptions import AMQPConnectionError
 from pika.exchange_type import ExchangeType
 
 from service import TranscriptionService, StoragePathService, MediaService
+logging.basicConfig(level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(message)s')
 
-LOGGER = logging.getLogger(__name__)
 # RambbitMQ Settings
 username = str(os.getenv("RABBITMQ_DEFAULT_USER"))
 password = str(os.getenv("RABBITMQ_DEFAULT_PASS"))
@@ -45,7 +45,7 @@ credentials = pika.credentials.PlainCredentials(username=username,
 def make_connection(host, cred):
     for count in range(0, 10):
         try:
-            print(f'Try to connect to RabbitMQ {count}')
+            logging.info(f'Try to connect to RabbitMQ {count}')
             connection = pika.BlockingConnection(pika.ConnectionParameters(host=host,
                                                                            credentials=cred))
             return connection
@@ -87,7 +87,7 @@ if __name__ == '__main__':
     channel.basic_consume(queue=queue_in_name,
                           auto_ack=True,
                           on_message_callback=callback)
-    print(' [*] Waiting for messages. To exit press CTRL+C')
+    logging.log(' [*] Waiting for messages. To exit press CTRL+C')
     while True:
         try:
             if channel.is_closed:
@@ -96,5 +96,5 @@ if __name__ == '__main__':
                 channel = connection.channel()
             channel.start_consuming()
         except Exception as e:
-            LOGGER.error(f"{str(e)}")
-            time.sleep(15)
+            logging.error(f"{str(e)}")
+            time.sleep(5)
