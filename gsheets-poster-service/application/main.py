@@ -1,3 +1,4 @@
+import logging
 import json
 import time
 import os
@@ -26,9 +27,12 @@ service_account_path = str(os.getenv("GOOGLE_SERVICE_ACCOUNT"))
 
 SPREADSHEET_ID = str(os.getenv("SPREADSHEET_ID"))
 
-HOST = 'http://callback:8080/'
+HOST = 'http://callback:8091/'
 
 SERVER_HOST = 'http://server:8080/'
+
+# Логи
+logging.basicConfig(level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(message)s')
 
 
 credentials = pika.credentials.PlainCredentials(username=username,
@@ -62,16 +66,29 @@ def callback(ch, method, properties, body):
 
         response = requests.get(HOST + 'callback/data')
 
-        values_to_add = response.json() 
+        if response.status_code == 200:
 
-        """ values_to_add - массив данных типа [
-                                                {'phone':'89232223334','email':'myemail@email.com', ''name': 'Ivan Ivanov', 'uuid':'455a-24s4-b532', "words":'{"word1":X,
-                                                                                                                                    "word2":Y}'},
-                                                {...},
-                                                ]"""
+            values_to_add_original = response.json()
+
+            value_to_add_as_strings = []
+
+            for element in values_to_add_original:
+                element['words'] = str(element['words'])
+                value_to_add_as_strings.append(element)
+
+            """ values_to_add - массив данных типа [
+                                                    {'phone':'89232223334','email':'myemail@email.com', ''name': 'Ivan Ivanov', 'uuid':'455a-24s4-b532', "words":'{"word1":X,
+                                                                                                                                        "word2":Y}'},
+                                                    {...},
+                                                    ]"""
 
 
-        gsheets_uploader_service.update_google_sheet(values_to_add=values_to_add, page_name = page_name)
+            gsheets_uploader_service.update_google_sheet(values_to_add=value_to_add_as_strings, page_name = page_name)
+
+            logging.info(f"New entries uploaded")
+
+        else:
+            logging.error(f"Failed to get new entries. Status code: {response.status_code}, Response: {response.text}")
 
 
     elif rabbit_message['action'] == 'generate':
@@ -80,32 +97,47 @@ def callback(ch, method, properties, body):
 
         response = requests.post(SERVER_HOST + 'generator/list',json=approved_data)
 
-        response_json = response.json() # response_json = [{'id': '1', 'uuid':'455a-24s4-b532666','status':'in process'}]
+        if response.status_code == 200:
+        
+            response_json = response.json() # response_json = [{'id': '1', 'uuid':'455a-24s4-b532666','status':'in process'}]
 
-        status_to_update = {}
+            status_to_update = {}
 
-        for entry in response_json:
+            for entry in response_json:
 
-            status_to_update[entry['id']] = [entry['status'], entry['uuid']]
+                status_to_update[entry['id']] = [entry['status'], entry['uuid']]
 
-        gsheets_uploader_service.update_video_statuses(status_to_update)
-            
+            gsheets_uploader_service.update_video_statuses(status_to_update)
+
+            logging.info(f"Generation uuid uploaded")
+
+        else:
+
+            logging.error(f"Failed to send entries to generation. Status code: {response.status_code}, Response: {response.text}")
+
 
     elif rabbit_message['action'] == 'checkStatus':
 
         approved_data = gsheets_uploader_service.request_approved_data_to_status_check()
-
+            
         response = requests.get(SERVER_HOST + 'generator/list/status',json=approved_data)
 
-        response_json = response.json() # response_json = [{'id': '1', 'uuid':'455a-24s4-b532666','status':'in process'}]
+        if response.status_code == 200:
 
-        status_to_update = {}
+            response_json = response.json() # response_json = [{'id': '1', 'uuid':'455a-24s4-b532666','status':'in process'}]
 
-        for entry in response_json:
+            status_to_update = {}
 
-            status_to_update[entry['id']] = [entry['status'], entry['uuid']]
+            for entry in response_json:
 
-        gsheets_uploader_service.update_video_statuses(status_to_update)
+                status_to_update[entry['id']] = [entry['status'], entry['uuid']]
+
+            gsheets_uploader_service.update_video_statuses(status_to_update)
+
+            logging.info(f"UUID generation statuses updated")
+
+        else:
+            logging.error(f"Failed to check status with server. Status code: {response.status_code}, Response: {response.text}")
 
 
 if __name__ == '__main__':
