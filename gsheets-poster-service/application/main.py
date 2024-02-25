@@ -95,10 +95,11 @@ def callback(ch, method, properties, body):
     elif rabbit_message['action'] == 'checkStatus':
 
         approved_data = gsheets_uploader_service.request_approved_data_to_status_check()
-
-
-        response = requests.get(SERVER_HOST + 'generator/list/status',json=approved_data)
-
+        url_path = f'{SERVER_HOST}generator/list/status'
+        print(url_path)
+        response = requests.get(url_path, json=approved_data)
+        content = response.content
+        print(str(content))
         response_json = response.json() # response_json = [{'id': '1', 'uuid':'455a-24s4-b532666','status':'in process'}]
         
         status_to_update = {}

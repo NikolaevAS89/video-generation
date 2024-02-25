@@ -1,6 +1,8 @@
 from faster_whisper import WhisperModel
 from moviepy.video.io.VideoFileClip import VideoFileClip
 
+import logging
+LOGGER = logging.getLogger(__name__)
 
 class StoragePathService:
 
