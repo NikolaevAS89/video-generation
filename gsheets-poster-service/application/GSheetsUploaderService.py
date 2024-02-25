@@ -181,17 +181,17 @@ class GSheetsUploader:
 
         approved_content = []
 
-        for entrie in last_sheet_content:
+        for entry in last_sheet_content:
 
-            if len(entrie) > 6 and entrie[6].strip().upper() == 'TRUE':
+            if len(entry) > 6 and entry[6].strip().upper() == 'TRUE':
 
-                if len(entrie) > 7:
+                if len(entry) > 7:
                     
                     continue
 
                 else:
 
-                    approved_data = {'id':entrie[0], 'uuid':entrie[4], 'words':json.loads(entrie[5].replace("'",'"'))}
+                    approved_data = {'id':entry[0], 'uuid':entry[4], 'words':json.loads(entry[5].replace("'",'"'))}
 
                     approved_content.append(approved_data)
         
@@ -210,17 +210,17 @@ class GSheetsUploader:
 
         approved_content = []
 
-        for entrie in last_sheet_content:
+        for entry in last_sheet_content:
 
-            if len(entrie) >= 7 and entrie[6].strip().upper() == 'TRUE':
+            if len(entry) >= 7 and entry[6].strip().upper() == 'TRUE':
 
-                if len(entrie) < 9 OR entrie[7].strip().lower() == 'done':
+                if len(entry) < 9 or entry[7].strip().lower() == 'done':
 
                     continue
 
                 else:
 
-                    approved_data = {'id':entrie[0], 'uuid':entrie[8]}
+                    approved_data = {'id':entry[0], 'uuid':entry[8]}
 
                 approved_content.append(approved_data)
         
