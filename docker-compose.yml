@@ -38,6 +38,7 @@ services:
     depends_on:
       - liquibase
       - db
+      - transcription
     ports:
       - 8082:8080
     environment:
@@ -80,6 +81,36 @@ services:
       - server
     environment:
       - OPERATOR_PASSWORD=${OPERATOR_PASSWORD}
+  transcription:
+    build: audio-transcript/
+    volumes:
+      - ./volumes/server:/storage
+    depends_on:
+      - rabbitmq
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS}
+      - RABBITMQ_DEFAULT_HOST=${RABBITMQ_DEFAULT_HOST}
+      - QUEUE_IN_NAME=${QUEUE_IN_NAME}
+      - QUEUE_OUT_NAME=${QUEUE_OUT_NAME}
+      - EXCHANGE_NAME=${EXCHANGE_NAME}
+      - ROUTING_KEY_IN=${ROUTING_KEY_IN}
+      - ROUTING_KEY_OUT=${ROUTING_KEY_OUT}
+      - MODEL_SIZE=${MODEL_SIZE}
+      - DEVICE=${DEVICE}
+      - COMPUTE_TYPE=${COMPUTE_TYPE}
+      - BEAM_SIZE=${BEAM_SIZE}
+      - STORAGE_PATH=/storage
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              capabilities: [gpu]
+              count: all
   gsheets:
     build: gsheets-poster-service/
     volumes:
