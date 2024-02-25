@@ -14,4 +14,4 @@ RUN ln -s /usr/bin/python3.12 /usr/bin/python
 
 WORKDIR "/application"
 
-ENTRYPOINT ["python", "main.py"]
+ENTRYPOINT ["python", "-u", "main.py"]

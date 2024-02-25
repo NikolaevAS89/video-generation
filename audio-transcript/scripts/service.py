@@ -1,8 +1,16 @@
+import logging
+from sys import stdout
+
 from faster_whisper import WhisperModel
 from moviepy.video.io.VideoFileClip import VideoFileClip
 
-import logging
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+logFormatter = logging.Formatter("%(name)-12s %(asctime)s %(levelname)-8s %(filename)s:%(funcName)s %(message)s")
+consoleHandler = logging.StreamHandler(stdout)
+consoleHandler.setFormatter(logFormatter)
+logger.addHandler(consoleHandler)
+
 
 class StoragePathService:
 

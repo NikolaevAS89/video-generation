@@ -1,12 +1,7 @@
 package ru.timestop.video.generator.scheduler.quartz;
 
 import org.quartz.JobDetail;
-import org.quartz.SchedulerContext;
 import org.quartz.Trigger;
-import org.quartz.simpl.SimpleJobFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -26,7 +21,6 @@ import ru.timestop.video.generator.scheduler.quartz.job.SendTriggerToUploadCallb
  */
 @Configuration
 public class QuartzContext {
-    private static final Logger LOGGER = LoggerFactory.getLogger(SendTriggerToUploadCallbackListJob.class);
 
     @Bean(name = "SendTriggerToUploadCallbackListJob")
     public JobDetailFactoryBean jobDetailFireUploadDataToGoogle(ApplicationContext applicationContext) {
@@ -59,7 +53,7 @@ public class QuartzContext {
     public CronTriggerFactoryBean triggerFireUploadDataToGoogle(@Qualifier("SendTriggerToUploadCallbackListJob") JobDetail job) {
         CronTriggerFactoryBean trigger = new CronTriggerFactoryBean();
         trigger.setJobDetail(job);
-        trigger.setCronExpression("0 40 20 * * ?"); // TODO
+        trigger.setCronExpression("0 0 20 * * ?"); // TODO
         trigger.setBeanName("FireUploadDataToGoogleTrigger");
         trigger.setDescription("FireUploadDataToGoogle");
         return trigger;
@@ -69,7 +63,7 @@ public class QuartzContext {
     public CronTriggerFactoryBean triggerFireGenerateVideosByGoogleData(@Qualifier("SendTriggerToGenerateVideosJob") JobDetail job) {
         CronTriggerFactoryBean trigger = new CronTriggerFactoryBean();
         trigger.setJobDetail(job);
-        trigger.setCronExpression("0 50 20 * * ?"); // TODO
+        trigger.setCronExpression("0 30 19 * * ?"); // TODO
         trigger.setBeanName("FireGenerateVideosByGoogleDataTrigger");
         trigger.setDescription("FireGenerateVideosByGoogleData");
         return trigger;
@@ -84,12 +78,14 @@ public class QuartzContext {
         trigger.setDescription("FireCheckStatus");
         return trigger;
     }
+
     @Bean
     public SpringBeanJobFactory springBeanJobFactory(ApplicationContext applicationContext) {
         SpringBeanJobFactory jobFactory = new SpringBeanJobFactory();
         jobFactory.setApplicationContext(applicationContext);
         return jobFactory;
     }
+
     @Bean
     public SchedulerFactoryBean scheduler(SpringBeanJobFactory springBeanJobFactory, Trigger... triggers) {
         SchedulerFactoryBean schedulerFactory = new SchedulerFactoryBean();

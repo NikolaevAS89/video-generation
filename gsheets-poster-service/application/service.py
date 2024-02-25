@@ -1,10 +1,16 @@
 import logging
 from datetime import datetime
+from sys import stdout
 
 from GSheetsUploaderService import GSheetsUploader
 from client import CallerClient, ServerClient
 
-logging.basicConfig(level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+logFormatter = logging.Formatter("%(name)-12s %(asctime)s %(levelname)-8s %(filename)s:%(funcName)s %(message)s")
+consoleHandler = logging.StreamHandler(stdout)
+consoleHandler.setFormatter(logFormatter)
+logger.addHandler(consoleHandler)
 
 
 class MessageConsumeService:
@@ -26,7 +32,7 @@ class MessageConsumeService:
             element['words'] = str(element['words'])
             value_to_add_as_strings.append(element)
         google_service.update_google_sheet(values_to_add=value_to_add_as_strings, page_name=page_name)
-        logging.info(f"New entries uploaded")
+        logger.info(f"New entries uploaded")
 
     def generate(self):
         client = ServerClient()
@@ -39,16 +45,20 @@ class MessageConsumeService:
         for entry in response_json:
             status_to_update[entry['id']] = [entry['status'], entry['uuid']]
         google_service.update_video_statuses(status_to_update)
-        logging.info(f"Generation uuid uploaded")
+        logger.info(f"Generation uuid uploaded")
 
     def update_status(self):
+        logger.info(f"Start update status")
         client = ServerClient()
         google_service = GSheetsUploader(spreadsheet_id=self.spreadsheet_id,
                                          service_account_file=self.service_account_file)
         approved_data = google_service.request_approved_data_to_status_check()
+        logger.info(f"approved_data={str(approved_data)}")
         response_json = client.get_status(approved_data)
+        logger.info(f"response_json={str(response_json)}")
         status_to_update = {}
         for entry in response_json:
             status_to_update[entry['id']] = [entry['status'], entry['uuid']]
+        logger.info(f"status_to_update={str(status_to_update)}")
         google_service.update_video_statuses(status_to_update)
-        logging.info(f"UUID generation statuses updated")
+        logger.info(f"UUID generation statuses updated")

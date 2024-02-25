@@ -2,6 +2,7 @@ import json
 import logging
 import os
 import time
+from sys import stdout
 
 import pika
 from pika.exceptions import AMQPConnectionError
@@ -25,8 +26,12 @@ service_account_path = str(os.getenv("GOOGLE_SERVICE_ACCOUNT"))
 SPREADSHEET_ID = str(os.getenv("SPREADSHEET_ID"))
 
 # Логи
-logging.basicConfig(level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(message)s')
-
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+logFormatter = logging.Formatter("%(name)-12s %(asctime)s %(levelname)-8s %(filename)s:%(funcName)s %(message)s")
+consoleHandler = logging.StreamHandler(stdout)
+consoleHandler.setFormatter(logFormatter)
+logger.addHandler(consoleHandler)
 credentials = pika.credentials.PlainCredentials(username=username,
                                                 password=password)
 
@@ -34,7 +39,7 @@ credentials = pika.credentials.PlainCredentials(username=username,
 def make_connection(host, cred):
     for count in range(0, 10):
         try:
-            logging.info(f'Try to connect to RabbitMQ {count}')
+            logger.info(f'Try to connect to RabbitMQ {count}')
             connection = pika.BlockingConnection(pika.ConnectionParameters(host=host,
                                                                            credentials=cred))
             return connection
@@ -54,18 +59,20 @@ def callback(ch, method, properties, body):
                                         service_account_file=service_account_path)
         rabbit_message = json.loads(body.decode("utf-8"))
 
-        if rabbit_message['action'] == 'upload':
+        logger.info(f"New message was read: {str(rabbit_message)}")
+        if str(rabbit_message['action']) == 'upload':
             service.upload()
-        elif rabbit_message['action'] == 'generate':
+        elif str(rabbit_message['action']) == 'generate':
             service.generate()
-        elif rabbit_message['action'] == 'checkStatus':
+        elif str(rabbit_message['action']) == 'checkStatus':
             service.update_status()
+        else:
+            logger.info(f"Command is not supposrted: {str(rabbit_message['action'])}")
     except Exception as e:
-        logging.error(e, exc_info=True)
+        logger.error(e, exc_info=True)
 
 
 if __name__ == '__main__':
-
     channel = connection.channel()
     channel.exchange_declare(exchange=exchange_name,
                              durable=True,
@@ -79,7 +86,7 @@ if __name__ == '__main__':
     channel.basic_consume(queue=queue_name,
                           auto_ack=True,
                           on_message_callback=callback)
-    print(' [*] Waiting for messages. To exit press CTRL+C')
+    logger.info(' [+] Waiting for messages. To exit press CTRL+C')
     while True:
         try:
             if channel.is_closed:
@@ -88,5 +95,5 @@ if __name__ == '__main__':
                 channel = connection.channel()
             channel.start_consuming()
         except Exception as e:
-            logging.error(f"{str(e)}")
+            logger.error(f"{str(e)}")
             time.sleep(5)
