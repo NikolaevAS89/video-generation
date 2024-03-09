@@ -34,3 +34,4 @@ storage/
 # GOOGLE ACCOUNT
 
 gsheets-poster-service/service_account.json
+service_account.json

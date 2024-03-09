@@ -4,6 +4,7 @@ from sys import stdout
 
 from GSheetsUploaderService import GSheetsUploader
 from client import CallerClient, ServerClient
+from GSheetsAuthenticatorService import GSheetsAuthentacatorService
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -23,21 +24,23 @@ class MessageConsumeService:
 
     def upload(self):
         client = CallerClient()
+        google_authenticator = GSheetsAuthentacatorService(service_account_file=self.service_account_file)
         google_service = GSheetsUploader(spreadsheet_id=self.spreadsheet_id,
-                                         service_account_file=self.service_account_file)
-        page_name = datetime.now().strftime('%Y-%m-%d')
+                                         creds = google_authenticator.creds)
+        sheet_name = datetime.now().strftime('%Y-%m-%d')
         values_to_add_original = client.get_callback_list()
         value_to_add_as_strings = []
         for element in values_to_add_original:
             element['words'] = str(element['words'])
             value_to_add_as_strings.append(element)
-        google_service.update_google_sheet(values_to_add=value_to_add_as_strings, page_name=page_name)
+        google_service.update_google_sheet(values_to_add=value_to_add_as_strings, sheet_name=sheet_name)
         logger.info(f"New entries uploaded")
 
     def generate(self):
         client = ServerClient()
+        google_authenticator = GSheetsAuthentacatorService(service_account_file=self.service_account_file)
         google_service = GSheetsUploader(spreadsheet_id=self.spreadsheet_id,
-                                         service_account_file=self.service_account_file)
+                                         creds = google_authenticator.creds)
         approved_data = google_service.request_approved_data_to_generation()
         response_json = client.make_generate(records=approved_data)
 
@@ -50,8 +53,9 @@ class MessageConsumeService:
     def update_status(self):
         logger.info(f"Start update status")
         client = ServerClient()
+        google_authenticator = GSheetsAuthentacatorService(service_account_file=self.service_account_file)
         google_service = GSheetsUploader(spreadsheet_id=self.spreadsheet_id,
-                                         service_account_file=self.service_account_file)
+                                         creds = google_authenticator.creds)
         approved_data = google_service.request_approved_data_to_status_check()
         logger.info(f"approved_data={str(approved_data)}")
         response_json = client.get_status(approved_data)
