@@ -49,6 +49,8 @@ class TranscriptionService:
 
         segment_subs = {
             "uuid": uuid,
+            "status": "Successes",
+            "message": "The audio has been transcribed.",
             "words": []}
 
         for segment in segments:

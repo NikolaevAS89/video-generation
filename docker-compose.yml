@@ -38,9 +38,6 @@ services:
     depends_on:
       - rabbitmq
     environment:
-      - POSTGRES_DB=${POSTGRES_DB}
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER}
       - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS}
       - RABBITMQ_DEFAULT_HOST=${RABBITMQ_DEFAULT_HOST}
@@ -49,6 +46,16 @@ services:
       - EXCHANGE_NAME=${EXCHANGE_NAME}
       - ROUTING_KEY_IN=${ROUTING_KEY_IN}
       - ROUTING_KEY_OUT=${ROUTING_KEY_OUT}
+      - QUEUE_AUDIO_IN_NAME=${QUEUE_AUDIO_IN_NAME}
+      - QUEUE_AUDIO_OUT_NAME=${QUEUE_AUDIO_OUT_NAME}
+      - EXCHANGE_AUDIO_NAME=${EXCHANGE_AUDIO_NAME}
+      - ROUTING_KEY_AUDIO_IN=${ROUTING_KEY_AUDIO_IN}
+      - ROUTING_KEY_AUDIO_OUT=${ROUTING_KEY_AUDIO_OUT}
+      - QUEUE_VIDEO_IN_NAME=${QUEUE_VIDEO_IN_NAME}
+      - QUEUE_VIDEO_OUT_NAME=${QUEUE_VIDEO_OUT_NAME}
+      - EXCHANGE_VIDEO_NAME=${EXCHANGE_VIDEO_NAME}
+      - ROUTING_KEY_VIDEO_IN=${ROUTING_KEY_VIDEO_IN}
+      - ROUTING_KEY_VIDEO_OUT=${ROUTING_KEY_VIDEO_OUT}
       - MODEL_SIZE=${MODEL_SIZE}
       - DEVICE=${DEVICE}
       - COMPUTE_TYPE=${COMPUTE_TYPE}
@@ -61,6 +68,38 @@ services:
             - driver: nvidia
               capabilities: [gpu]
               count: all
+  audio-generation:
+    build: audio-generation/
+    volumes:
+      - ./volumes/server:/storage
+    depends_on:
+      - rabbitmq
+    environment:
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS}
+      - RABBITMQ_DEFAULT_HOST=${RABBITMQ_DEFAULT_HOST}
+      - QUEUE_IN_NAME=${QUEUE_AUDIO_IN_NAME}
+      - QUEUE_OUT_NAME=${QUEUE_AUDIO_OUT_NAME}
+      - EXCHANGE_NAME=${EXCHANGE_AUDIO_NAME}
+      - ROUTING_KEY_IN=${ROUTING_KEY_AUDIO_IN}
+      - ROUTING_KEY_OUT=${ROUTING_KEY_AUDIO_OUT}
+      - STORAGE_PATH=/storage
+  video-generation:
+    build: video-generation/
+    volumes:
+      - ./volumes/server:/storage
+    depends_on:
+      - rabbitmq
+    environment:
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS}
+      - RABBITMQ_DEFAULT_HOST=${RABBITMQ_DEFAULT_HOST}
+      - QUEUE_IN_NAME=${QUEUE_VIDEO_IN_NAME}
+      - QUEUE_OUT_NAME=${QUEUE_VIDEO_OUT_NAME}
+      - EXCHANGE_NAME=${EXCHANGE_VIDEO_NAME}
+      - ROUTING_KEY_IN=${ROUTING_KEY_VIDEO_IN}
+      - ROUTING_KEY_OUT=${ROUTING_KEY_VIDEO_OUT}
+      - STORAGE_PATH=/storage
   server:
     build: backend/
     volumes:

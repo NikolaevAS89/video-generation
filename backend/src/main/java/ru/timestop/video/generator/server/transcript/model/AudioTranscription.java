@@ -6,5 +6,5 @@ import java.util.UUID;
 /**
  * @author t.i.m.e.s.t.o.p@mail.ru
  */
-public record AudioTranscription(UUID uuid, List<WordMetadata> words) {
+public record AudioTranscription(UUID uuid, String status, String message, List<WordMetadata> words) {
 }

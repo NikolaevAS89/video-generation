@@ -7,7 +7,7 @@ from sys import stdout
 import pika
 from pika.exchange_type import ExchangeType
 
-from service import TranscriptionService, StoragePathService, MediaService
+from service import VideoService, StoragePathService
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -27,45 +27,33 @@ exchange_name = str(os.getenv("EXCHANGE_NAME"))
 routing_key_in = str(os.getenv("ROUTING_KEY_IN"))
 routing_key_out = str(os.getenv("ROUTING_KEY_OUT"))
 
-# Faster-Whisper Settings
-model_size = str(os.getenv("MODEL_SIZE"))
-device = str(os.getenv("DEVICE"))
-compute_type = str(os.getenv("COMPUTE_TYPE"))
-beam_size = int(os.getenv("BEAM_SIZE"))
-
 # Directories
 root_storage_path = str(os.getenv("STORAGE_PATH"))
 
 # Init
 storage_path_service = StoragePathService(root_path=root_storage_path)
-transcription_service = TranscriptionService(storage_path_service=storage_path_service,
-                                             model_size=model_size,
-                                             device=device,
-                                             compute_type=compute_type,
-                                             beam_size=beam_size)
-media_service = MediaService(storage=storage_path_service)
+audio_service = VideoService(storage_path_service=storage_path_service)
 credentials = pika.credentials.PlainCredentials(username=username,
                                                 password=password)
 
 
 def callback(ch, method, properties, body):
     try:
-        uuid = body.decode("utf-8")
-        media_service.split_source(uuid=uuid)
+        source = body.decode("utf-8")
+        request = json.load(source)
         try:
-            answer = transcription_service.generate_subs(uuid=uuid)
+            answer = audio_service.generate_video(**request)
         except Exception as e:
             answer = {
-                "uuid": uuid,
+                "uuid": request.get('uuid', "Undefined"),
                 "status": "Error",
-                "message": "An error while an audio transcribing.",
-                "words": []
+                "message": "An error while an video generating."
             }
         ch.basic_publish(exchange=exchange_name,
                          routing_key=routing_key_out,
                          body=json.dumps(answer).encode("UTF-8"))
     except Exception as e:
-        logger.error(str(e))
+        logger.error(e)
 
 
 if __name__ == '__main__':
