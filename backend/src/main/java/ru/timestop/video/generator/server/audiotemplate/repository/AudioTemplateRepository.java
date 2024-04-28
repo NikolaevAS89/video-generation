@@ -1,9 +1,8 @@
-package ru.timestop.video.generator.server.transcript.repository;
+package ru.timestop.video.generator.server.audiotemplate.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import ru.timestop.video.generator.server.template.entity.TemplateEntity;
-import ru.timestop.video.generator.server.transcript.entity.AudioTemplateEntity;
-import ru.timestop.video.generator.server.transcript.entity.TranscriptEntity;
+import ru.timestop.video.generator.server.audiotemplate.entity.AudioTemplateEntity;
 
 import java.util.Optional;
 import java.util.UUID;

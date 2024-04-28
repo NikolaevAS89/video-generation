@@ -25,7 +25,7 @@ create table audio_template(
 
 create table processed(
     id uuid,
-    template_id uuid,
+    audio_template_id uuid,
     words jsonb,
     status varchar,
     creation timestamp,

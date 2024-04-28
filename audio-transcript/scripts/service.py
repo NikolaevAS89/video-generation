@@ -18,13 +18,40 @@ class StoragePathService:
         self._root_path_ = root_path
 
     def get_root_dir(self):
+        """
+        :return: a root directory to store all data
+        """
         return self._root_path_
 
     def get_sources_path(self, uuid: str):
+        """
+        :param uuid:
+        :return: path to an original video
+        """
         return f'{self._root_path_}/{uuid}/source'
 
-    def get_audio_transcription_path(self, uuid: str):
+    def get_original_audio_path(self, uuid: str):
+        """
+        :param uuid:
+        :return: path to an original audio
+        """
         return f'{self._root_path_}/{uuid}/audio.mp3'
+
+    def get_generated_audio_path(self, uuid: str, task_uuid: str):
+        """
+        :param uuid: same as templateId
+        :param task_uuid: same as processedId
+        :return: path to an generated audio
+        """
+        return f'{self._root_path_}/{uuid}/{task_uuid}/audio_generated.mp3'
+
+    def get_generated_video_path(self, uuid: str, task_uuid: str):
+        """
+        :param uuid: same as templateId
+        :param task_uuid: same as processedId
+        :return: path to an generated audio
+        """
+        return f'{self._root_path_}/{uuid}/{task_uuid}/video_generated'
 
 
 class TranscriptionService:
@@ -42,7 +69,7 @@ class TranscriptionService:
 
     def generate_subs(self,
                       uuid: str) -> dict[str, list | str]:
-        audio_path = self._storage_path_service_.get_audio_transcription_path(uuid=uuid)
+        audio_path = self._storage_path_service_.get_original_audio_path(uuid=uuid)
         segments, info = self._model_.transcribe(audio=audio_path,
                                                  beam_size=self._beam_size_,
                                                  word_timestamps=True)
@@ -72,4 +99,4 @@ class MediaService:
     def split_source(self, uuid: str) -> None:
         video_clip = VideoFileClip(self._storage_.get_sources_path(uuid))
         audio_clip = video_clip.audio
-        audio_clip.write_audiofile(self._storage_.get_audio_transcription_path(uuid))
+        audio_clip.write_audiofile(self._storage_.get_original_audio_path(uuid))

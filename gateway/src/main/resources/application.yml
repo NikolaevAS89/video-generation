@@ -9,6 +9,8 @@ urls:
     url: http://server:8080
   storage:
     url: http://server:8080
+  generator:
+    url: http://server:8080
   processed:
     url: http://server:8080
   transcript:
@@ -48,6 +50,10 @@ spring:
           uri: ${urls.storage.url}
           predicates:
             - Path=/storage/**
+        - id: generator
+          uri: ${urls.generator.url}
+          predicates:
+            - Path=/generator/**
         - id: template
           uri: ${urls.template.url}
           predicates:

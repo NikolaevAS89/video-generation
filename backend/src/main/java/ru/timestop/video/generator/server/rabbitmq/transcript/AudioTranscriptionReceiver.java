@@ -1,4 +1,4 @@
-package ru.timestop.video.generator.server.rabbitmq;
+package ru.timestop.video.generator.server.rabbitmq.transcript;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
@@ -8,9 +8,9 @@ import org.springframework.amqp.core.MessageListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.timestop.video.generator.server.facade.TranscriptFacade;
+import ru.timestop.video.generator.server.rabbitmq.transcript.model.AudioTranscription;
 import ru.timestop.video.generator.server.template.TemplateService;
 import ru.timestop.video.generator.server.template.entity.TemplateEntity;
-import ru.timestop.video.generator.server.transcript.model.AudioTranscription;
 
 import java.util.UUID;
 
@@ -39,7 +39,7 @@ public class AudioTranscriptionReceiver implements MessageListener {
             byte[] body = message.getBody();
             AudioTranscription audioTranscriptions = this.objectMapper.readValue(body, AudioTranscription.class);
             if (!audioTranscriptions.status().equalsIgnoreCase("successes")) {
-                TemplateEntity task = this.templateService.getTask(audioTranscriptions.uuid());
+                TemplateEntity task = this.templateService.getTemplate(audioTranscriptions.uuid()).orElseThrow();
                 task.setStatus(audioTranscriptions.message());
                 this.templateService.update(task);
             } else {

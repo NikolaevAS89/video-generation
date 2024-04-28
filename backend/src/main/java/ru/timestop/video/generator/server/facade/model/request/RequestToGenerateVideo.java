@@ -1,4 +1,4 @@
-package ru.timestop.video.generator.server.processed.model.request;
+package ru.timestop.video.generator.server.facade.model.request;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;

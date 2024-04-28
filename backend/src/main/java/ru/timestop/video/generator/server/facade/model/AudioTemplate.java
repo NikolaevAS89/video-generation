@@ -1,4 +1,4 @@
-package ru.timestop.video.generator.server.transcript.model;
+package ru.timestop.video.generator.server.facade.model;
 
 import java.util.List;
 import java.util.Map;

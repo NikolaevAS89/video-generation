@@ -5,6 +5,7 @@ import ru.timestop.video.generator.server.transcript.entity.TranscriptEntity;
 import ru.timestop.video.generator.server.transcript.model.WordMetadata;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * @author t.i.m.e.s.t.o.p@mail.ru
@@ -12,7 +13,7 @@ import java.util.List;
 public interface TranscriptService {
     TranscriptEntity createAndSave(TemplateEntity template, List<WordMetadata> transcript);
 
-    List<WordMetadata> getTranscript(TemplateEntity template);
+    Optional<TranscriptEntity> getTranscript(TemplateEntity template);
 
     void deleteByTemplate(TemplateEntity template);
 }

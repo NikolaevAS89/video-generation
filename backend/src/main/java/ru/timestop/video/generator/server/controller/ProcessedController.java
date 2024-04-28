@@ -6,10 +6,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
-import ru.timestop.video.generator.server.processed.GeneratedVideoStorageService;
-import ru.timestop.video.generator.server.processed.model.request.RequestStatus;
-import ru.timestop.video.generator.server.processed.model.request.RequestToGenerateVideo;
-import ru.timestop.video.generator.server.processed.model.response.RequestsStatus;
+import ru.timestop.video.generator.server.facade.VideoCompilerService;
+import ru.timestop.video.generator.server.facade.model.request.RequestStatus;
+import ru.timestop.video.generator.server.facade.model.request.RequestToGenerateVideo;
+import ru.timestop.video.generator.server.facade.model.response.RequestsStatus;
 import ru.timestop.video.generator.server.storage.model.FilesContent;
 import ru.timestop.video.generator.server.utilites.IOUtils;
 
@@ -22,20 +22,20 @@ import java.util.UUID;
 @RestController
 @CrossOrigin
 public class ProcessedController {
-    private final GeneratedVideoStorageService generatedVideoStorageService;
+    private final VideoCompilerService videoCompilerService;
 
-    public ProcessedController(@Autowired GeneratedVideoStorageService generatedVideoStorageService) {
-        this.generatedVideoStorageService = generatedVideoStorageService;
+    public ProcessedController(@Autowired VideoCompilerService videoCompilerService) {
+        this.videoCompilerService = videoCompilerService;
     }
 
     @GetMapping(value = "/generator/list/status")
     public List<RequestsStatus> getStatuses(@RequestBody List<RequestStatus> requests) {
-        return generatedVideoStorageService.getStatuses(requests);
+        return videoCompilerService.getStatuses(requests);
     }
 
     @PostMapping(value = "/generator/list")
     public List<RequestsStatus> createTasks(@RequestBody List<RequestToGenerateVideo> requests) {
-        return generatedVideoStorageService.createRequestsToGenerate(requests);
+        return videoCompilerService.createRequestsToGenerate(requests);
     }
 
     // проиграть видео с измененной звуковой дорожкой GET /video/{uuid}/processed request body {"{patern_name1}": "....", ....}
@@ -44,7 +44,7 @@ public class ProcessedController {
     public ResponseEntity<StreamingResponseBody> getProcessedToPlay(@PathVariable("uuid") String uuid,
                                                                     @RequestHeader(value = "Range", required = false)
                                                                     String rangeHeader) {
-        FilesContent filesContent = this.generatedVideoStorageService.readGeneratedVideo(UUID.fromString(uuid));
+        FilesContent filesContent = this.videoCompilerService.readGeneratedVideo(UUID.fromString(uuid));
         return prepareContent(filesContent, rangeHeader);
     }
 

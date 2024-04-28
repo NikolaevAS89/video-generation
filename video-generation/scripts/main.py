@@ -40,12 +40,21 @@ credentials = pika.credentials.PlainCredentials(username=username,
 def callback(ch, method, properties, body):
     try:
         source = body.decode("utf-8")
-        request = json.load(source)
+        logger.info(f"Message:{str(source)}")
+        request = json.loads(source)
+        answer = {
+            "processedId": request.get('processedId', "Undefined"),
+            "status": "Video is generating",
+            "message": ""
+        }
+        ch.basic_publish(exchange=exchange_name,
+                         routing_key=routing_key_out,
+                         body=json.dumps(answer).encode("UTF-8"))
         try:
             answer = audio_service.generate_video(**request)
         except Exception as e:
             answer = {
-                "uuid": request.get('uuid', "Undefined"),
+                "processedId": request.get('processedId', "Undefined"),
                 "status": "Error",
                 "message": "An error while an video generating."
             }

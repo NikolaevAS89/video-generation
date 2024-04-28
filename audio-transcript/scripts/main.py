@@ -51,6 +51,15 @@ credentials = pika.credentials.PlainCredentials(username=username,
 def callback(ch, method, properties, body):
     try:
         uuid = body.decode("utf-8")
+        answer = {
+            "uuid": uuid,
+            "status": "Transcribing",
+            "message": "Transcribing",
+            "words": []
+        }
+        ch.basic_publish(exchange=exchange_name,
+                         routing_key=routing_key_out,
+                         body=json.dumps(answer).encode("UTF-8"))
         media_service.split_source(uuid=uuid)
         try:
             answer = transcription_service.generate_subs(uuid=uuid)

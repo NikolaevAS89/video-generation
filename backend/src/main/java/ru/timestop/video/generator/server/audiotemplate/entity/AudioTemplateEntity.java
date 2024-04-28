@@ -1,4 +1,4 @@
-package ru.timestop.video.generator.server.transcript.entity;
+package ru.timestop.video.generator.server.audiotemplate.entity;
 
 import io.hypersistence.utils.hibernate.type.json.JsonType;
 import jakarta.annotation.Nonnull;

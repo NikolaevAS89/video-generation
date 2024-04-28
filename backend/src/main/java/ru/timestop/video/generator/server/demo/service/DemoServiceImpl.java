@@ -31,7 +31,7 @@ public class DemoServiceImpl implements DemoService {
     @Override
     @Transactional
     public TemplateEntity createDemo(String filename, InputStream stream) {
-        TemplateEntity template = this.templateService.createTask(filename, stream);
+        TemplateEntity template = this.templateService.createTemplate(filename, stream);
         DemoEntity demoEntity = new DemoEntity();
         demoEntity.setTemplate(template);
         demoRepository.saveAndFlush(demoEntity);

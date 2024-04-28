@@ -5,7 +5,7 @@ import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import org.hibernate.annotations.Type;
-import ru.timestop.video.generator.server.template.entity.TemplateEntity;
+import ru.timestop.video.generator.server.audiotemplate.entity.AudioTemplateEntity;
 
 import java.io.Serializable;
 import java.sql.Timestamp;
@@ -23,12 +23,13 @@ public class ProcessedEntity implements Serializable {
     private UUID id;
 
     @Nonnull
-    @JoinColumn(name = "template_id", referencedColumnName = "id")
+    @JoinColumn(name = "audio_template_id", referencedColumnName = "id")
     @ManyToOne(fetch = FetchType.EAGER)
-    private TemplateEntity template;
+    private AudioTemplateEntity audioTemplate;
 
     @Nullable
     private String status;
+
     @Column(name = "words", columnDefinition = "jsonb", nullable = false)
     @Type(JsonType.class)
     private Map<String, String> words;
@@ -54,12 +55,12 @@ public class ProcessedEntity implements Serializable {
         return this;
     }
 
-    public TemplateEntity getTemplate() {
-        return template;
+    public AudioTemplateEntity getAudioTemplate() {
+        return audioTemplate;
     }
 
-    public ProcessedEntity setTemplate(TemplateEntity template) {
-        this.template = template;
+    public ProcessedEntity setAudioTemplate(AudioTemplateEntity audioTemplate) {
+        this.audioTemplate = audioTemplate;
         return this;
     }
 

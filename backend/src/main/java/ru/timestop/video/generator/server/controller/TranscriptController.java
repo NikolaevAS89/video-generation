@@ -5,7 +5,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.timestop.video.generator.server.facade.TranscriptFacade;
-import ru.timestop.video.generator.server.transcript.model.AudioTemplate;
+import ru.timestop.video.generator.server.facade.model.AudioTemplate;
 import ru.timestop.video.generator.server.transcript.model.WordMetadata;
 
 import java.util.List;
@@ -18,7 +18,6 @@ import java.util.UUID;
 @CrossOrigin
 public class TranscriptController {
     private final TranscriptFacade transcriptFacade;
-
 
     public TranscriptController(@Autowired TranscriptFacade transcriptFacade) {
         this.transcriptFacade = transcriptFacade;

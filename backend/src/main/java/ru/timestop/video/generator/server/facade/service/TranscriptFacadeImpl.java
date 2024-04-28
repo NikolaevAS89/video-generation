@@ -2,15 +2,17 @@ package ru.timestop.video.generator.server.facade.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import ru.timestop.video.generator.server.audiotemplate.AudioTemplateService;
+import ru.timestop.video.generator.server.audiotemplate.entity.AudioTemplateEntity;
 import ru.timestop.video.generator.server.facade.TranscriptFacade;
+import ru.timestop.video.generator.server.facade.model.AudioTemplate;
 import ru.timestop.video.generator.server.template.TemplateService;
 import ru.timestop.video.generator.server.template.entity.TemplateEntity;
-import ru.timestop.video.generator.server.transcript.AudioTemplateService;
 import ru.timestop.video.generator.server.transcript.TranscriptService;
 import ru.timestop.video.generator.server.transcript.entity.TranscriptEntity;
-import ru.timestop.video.generator.server.transcript.model.AudioTemplate;
 import ru.timestop.video.generator.server.transcript.model.WordMetadata;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -19,6 +21,9 @@ import java.util.UUID;
  */
 @Service
 public class TranscriptFacadeImpl implements TranscriptFacade {
+    AudioTemplateEntity EMPTY_AUDIO_TEMPLATE_ENTITY = new AudioTemplateEntity()
+            .setChosen(Collections.emptyList())
+            .setMapping(Collections.emptyMap());
     private final TemplateService templateService;
     private final TranscriptService transcriptService;
     private final AudioTemplateService audioTemplateService;
@@ -32,29 +37,40 @@ public class TranscriptFacadeImpl implements TranscriptFacade {
     }
 
     @Override
-    public UUID createAndSave(UUID template_uuid, List<WordMetadata> transcript) {
-        TemplateEntity templateEntity = this.templateService.getTask(template_uuid);
+    public UUID createAndSave(UUID templateId, List<WordMetadata> transcript) {
+        TemplateEntity templateEntity = this.templateService.getTemplate(templateId)
+                .orElseThrow();
         TranscriptEntity transcriptEntity = this.transcriptService.createAndSave(templateEntity, transcript);
-        templateEntity.setStatus("Transcribed"); // TODO status as enum
+        templateEntity.setStatus("Transcribed");
         this.templateService.update(templateEntity);
         return transcriptEntity.getId();
     }
 
     @Override
-    public List<WordMetadata> getTranscript(UUID template_uuid) {
-        TemplateEntity templateEntity = this.templateService.getTask(template_uuid);
-        return this.transcriptService.getTranscript(templateEntity);
+    public List<WordMetadata> getTranscript(UUID templateId) {
+        TemplateEntity templateEntity = this.templateService.getTemplate(templateId)
+                .orElseThrow();
+        return this.transcriptService.getTranscript(templateEntity)
+                .orElseThrow()
+                .getTranscript();
     }
 
     @Override
-    public void setChosen(UUID template_uuid, AudioTemplate chosen) {
-        TemplateEntity templateEntity = this.templateService.getTask(template_uuid);
-        this.audioTemplateService.createAndSave(templateEntity, chosen);
+    public void setChosen(UUID templateId, AudioTemplate audioTemplate) {
+        TemplateEntity templateEntity = this.templateService.getTemplate(templateId)
+                .orElseThrow();
+        this.audioTemplateService.createAndSave(templateEntity,
+                audioTemplate.choosed(),
+                audioTemplate.mapping());
     }
 
     @Override
-    public AudioTemplate getChosen(UUID template_uuid) {
-        TemplateEntity templateEntity = this.templateService.getTask(template_uuid);
-        return this.audioTemplateService.getAudioTemplate(templateEntity);
+    public AudioTemplate getChosen(UUID templateId) {
+        TemplateEntity templateEntity = this.templateService.getTemplate(templateId)
+                .orElseThrow();
+        AudioTemplateEntity audioTemplateEntity = this.audioTemplateService.getAudioTemplate(templateEntity)
+                .orElse(EMPTY_AUDIO_TEMPLATE_ENTITY);
+        return new AudioTemplate(audioTemplateEntity.getChosen(),
+                audioTemplateEntity.getMapping());
     }
 }

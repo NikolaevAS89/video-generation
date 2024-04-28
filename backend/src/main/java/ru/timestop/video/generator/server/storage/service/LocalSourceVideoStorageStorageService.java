@@ -33,32 +33,32 @@ public class LocalSourceVideoStorageStorageService implements SourceVideoStorage
     }
 
     @Override
-    public void saveSourceVideo(UUID uuid, InputStream stream) {
-        File source_file = getFileName(uuid);
+    public void saveSourceVideo(UUID templateId, InputStream stream) {
+        File sourceFile = getFileName(templateId);
         try {
-            Files.createDirectories(source_file.getParentFile().toPath());
-            Files.copy(stream, source_file.toPath());
+            Files.createDirectories(sourceFile.getParentFile().toPath());
+            Files.copy(stream, sourceFile.toPath());
         } catch (IOException e) {
             throw new RuntimeException(e); //  TODO make custom exception
         }
     }
 
     @Override
-    public FilesContent readSourceVideo(UUID uuid) {
-        File source_file = getFileName(uuid);
+    public FilesContent readSourceVideo(UUID templateId) {
+        File source_file = getFileName(templateId);
         try {
             long size = Files.size(source_file.toPath());
             InputStream content = new FileInputStream(source_file);
             return new FilesContent(size, content);
         } catch (IOException e) {
-            LOGGER.error("A read was failed : " + uuid, e);
+            LOGGER.error("A read was failed : " + templateId, e);
             throw new RuntimeException(e); //  TODO make custom exception
         }
     }
 
     @Override
-    public FilesContent readGeneratedVideo(UUID template_uuid, UUID request_uuid) {
-        File source_file = getFileName(template_uuid, request_uuid);
+    public FilesContent readGeneratedVideo(UUID templateId, UUID processedId) {
+        File source_file = getFileName(templateId, processedId);
         try {
             long size = Files.size(source_file.toPath());
             InputStream content = new FileInputStream(source_file);
@@ -74,6 +74,6 @@ public class LocalSourceVideoStorageStorageService implements SourceVideoStorage
     }
 
     private static File getFileName(UUID template_uuid, UUID request_uuid) {
-        return new File(FOLDER + "/" + template_uuid.toString() + "/generated/" + request_uuid.toString());
+        return new File(FOLDER + "/" + template_uuid.toString() + "/"+ request_uuid.toString()+"/video_generated");
     }
 }

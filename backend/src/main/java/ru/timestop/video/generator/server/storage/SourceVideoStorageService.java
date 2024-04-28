@@ -10,11 +10,11 @@ import java.util.UUID;
  */
 public interface SourceVideoStorageService {
 
-    void deleteFolder(UUID sourceVideosUuid);
+    void deleteFolder(UUID templateId);
 
-    void saveSourceVideo(UUID sourceVideosUuid, InputStream stream);
+    void saveSourceVideo(UUID templateId, InputStream stream);
 
-    FilesContent readSourceVideo(UUID sourceVideosUuid);
-     FilesContent readGeneratedVideo(UUID template_uuid, UUID request_uuid);
+    FilesContent readSourceVideo(UUID templateId);
 
+    FilesContent readGeneratedVideo(UUID templateId, UUID processedId);
 }
