@@ -1,4 +1,4 @@
-FROM python:3.10.14-slim
+FROM huecker.io/library/python:3.10.14-slim
 
 RUN mkdir "/application"
 RUN mkdir "/storage"

@@ -2,6 +2,11 @@ import logging
 import os
 import time
 from sys import stdout
+import torchaudio
+import torch
+from TTS.tts.configs.xtts_config import XttsConfig
+from TTS.tts.models.xtts import Xtts
+
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -58,13 +63,19 @@ class StoragePathService:
         :param task_uuid: same as processedId
         :return: path to an generated audio
         """
-        return f'{self._root_path_}/{uuid}/{task_uuid}/video_generated'
+        return f'{self._root_path_}/{uuid}/{task_uuid}/video_generated.mp4'
 
 
 class AudioService:
     def __init__(self,
                  storage_path_service: StoragePathService):
         self._storage_path_service_ = storage_path_service
+        # Initialize the TTS model
+        config = XttsConfig()
+        config.load_json("/application/tts/config_xtts2.json")
+        self.model = Xtts.init_from_config(config)
+        self.model.load_checkpoint(config, checkpoint_dir="/application/tts/tts_models--multilingual--multi-dataset--xtts_v2", eval=True)
+        self.model.cuda()
 
     def generate_audio(self,
                        templateId: str,
@@ -106,8 +117,40 @@ class AudioService:
                                                                                     task_uuid=processedId)
         generated_root_dir = self._storage_path_service_.get_generated_directory(uuid=templateId,
                                                                                  task_uuid=processedId)
-        os.popen(f'mkdir {generated_root_dir} & cp {original_audio_path} {generated_audio_path}')  # TODO make real generation
-        time.sleep(30)  # TODO delete after tests
+        # os.popen(f'mkdir {generated_root_dir} & cp {original_audio_path} {generated_audio_path}')  # TODO make real generation
+
+        os.makedirs(generated_root_dir, exist_ok=True)
+
+        text_to_generate = ""
+        i = 0
+        while i < len(chosen):
+            if chosen[i] == 0:
+                text_to_generate += originalWords[i]['word']
+                i += 1
+            else:
+                group_num = chosen[i]
+                group_name = next(key for key, value in mapping.items() if value == group_num)
+                replacement_text = replacements[group_name]
+                text_to_generate += replacement_text
+                
+                # Skip over all words in the current group
+                while i < len(chosen) and chosen[i] == group_num:
+                    i += 1
+        
+        # Generate conditioning latents
+        gpt_cond_latent, speaker_embedding = self.model.get_conditioning_latents(audio_path=[original_audio_path])
+
+        # Generate the audio using the TTS model
+        out = self.model.inference(
+            text_to_generate,
+            "ru",
+            gpt_cond_latent,
+            speaker_embedding
+        )
+
+        # Save the generated audio to the specified path
+        torchaudio.save(generated_audio_path, torch.tensor(out["wav"]).unsqueeze(0), 24000)
+
         return {
             "processedId": processedId,
             "status": "Successes",

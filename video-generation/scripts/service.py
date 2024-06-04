@@ -2,6 +2,9 @@ import logging
 import os
 import time
 from sys import stdout
+from Wav2Lip.video_processor import VideoProcessor
+from GFPGAN.video_postprocessor import VideoPostProcessor
+import shutil
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -50,56 +53,79 @@ class StoragePathService:
         :param task_uuid: same as processedId
         :return: path to an generated audio
         """
-        return f'{self._root_path_}/{uuid}/{task_uuid}/video_generated'
+        return f'{self._root_path_}/{uuid}/{task_uuid}/video_generated.mp4'
 
 
 class VideoService:
-    def __init__(self,
-                 storage_path_service: StoragePathService):
+    def __init__(self, storage_path_service: StoragePathService):
         self._storage_path_service_ = storage_path_service
+        self.temp_path = '/temp'
+        # self.video_processor = VideoProcessor(checkpoint_path='./Wav2Lip/wav2lip.pth', temp_path=self.temp_path)
+        # self.video_postprocessor = VideoPostProcessor(temp_path=self.temp_path)
+        self.video_processor = VideoProcessor(checkpoint_path='./Wav2Lip/wav2lip.pth')
+        self.video_postprocessor = VideoPostProcessor()
 
-    def generate_video(self,
-                       templateId: str,
-                       processedId: str,
-                       chosen: list[int],
-                       mapping: dict[str, int],
-                       replacements: dict[str, str],
-                       originalWords: list[dict]) -> dict:
-        """
-        Generate new audio by a list of words
-        :param templateId: uuid
-        :param processedId: uuid
-        :param chosen: an array with same length as originalWords and contain an indexes groups of original words
-        For example [0,1,1,0,... , 0, 5] mean that 2d and 3t original words replace together as 1st group
-        :param mapping: groups names with their indexes
-        :param replacements: mapping target values to groups
-        :param originalWords: a list of original words with timemarks in a following structure:
-        [
-            {
-                "word": str,
-                "start": str,
-                "end": str,
-            },
-            ...
-        ]
-        an example:
-        [
-            {
-                "word": " Hallow,",
-                "start": "0.0",
-                "end": "0.88"
-            },
-            ....
-        ]
-        :return: result of generation
-        """
+    def generate_video(
+            self, 
+            templateId: str, 
+            processedId: str, 
+            chosen: list[int], 
+            mapping: dict[str, int],
+            replacements: dict[str, str], 
+            originalWords: list[dict]
+        ) -> dict:
+
+        temp_dir_path = self.temp_path + f'/{templateId}/{processedId}'
+
+        if os.path.exists(temp_dir_path):
+            shutil.rmtree(temp_dir_path)
+        os.makedirs(temp_dir_path, exist_ok=True)
+
+
+
         original_video_path = self._storage_path_service_.get_sources_path(uuid=templateId)
-        generated_video_path = self._storage_path_service_.get_generated_video_path(uuid=templateId,
-                                                                                    task_uuid=processedId)
-        os.popen(f'cp {original_video_path} {generated_video_path}')  # TODO make real generation
-        time.sleep(30)  # TODO delete after tests
+        logger.info(original_video_path)
+        generated_audio_path = self._storage_path_service_.get_generated_audio_path(uuid=templateId, task_uuid=processedId)
+        logger.info(generated_audio_path)
+        generated_video_path = self._storage_path_service_.get_generated_video_path(uuid=templateId, task_uuid=processedId)
+        logger.info(generated_video_path)
+
+        # # Ensure directories exist
+        # os.makedirs(generated_video_path, exist_ok=True)
+
+        # Define paths
+        # result_video_path = os.path.join(generated_video_path, 'result_voice.mp4')
+
+        # Call the video processing method
+
+        logger.info('processing video')
+        self.video_processor.process_video(
+            face_path=original_video_path,
+            audio_path=generated_audio_path,
+            # outfile=result_video_path
+            # outfile=generated_video_path,
+            outfile=temp_dir_path + f'/video_generated_raw.mp4',
+            output_path=temp_dir_path
+        )
+
+        self.video_postprocessor.process(
+            video_path=temp_dir_path + f'/video_generated_raw.mp4',
+            audio_path=generated_audio_path,
+            outfile=generated_video_path,
+            output_path=temp_dir_path
+        )
+
         return {
             "processedId": processedId,
-            "status": "Successes",
+            "status": "Success",
             "message": "The video has been generated."
         }
+    
+
+# storage_path_service = StoragePathService('./storage')
+
+# video_service = VideoService(storage_path_service)
+# video_service.generate_video(
+#     'test_uuid',
+#     'test_process_uuid'
+# )

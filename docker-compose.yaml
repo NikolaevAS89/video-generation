@@ -1,0 +1,194 @@
+version: "3.8"
+services:
+  rabbitmq:
+    image: huecker.io/library/rabbitmq:3.12.6-management-alpine
+    hostname: rabbitmq
+    restart: always
+    environment:
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS}
+      - RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS=${RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS}
+    volumes:
+      - ./volumes/rabbitmq:/var/lib/rabbitmq
+    ports:
+      - 15672:15672
+  db:
+    image: huecker.io/library/postgres:14.1-alpine
+    restart: always
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    volumes:
+      - ./volumes/db:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+  liquibase:
+    build: liquibase/
+    depends_on:
+      - db
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+  transcription:
+    build: audio-transcript/
+    volumes:
+      - ./volumes/server:/storage
+    depends_on:
+      - rabbitmq
+    environment:
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS}
+      - RABBITMQ_DEFAULT_HOST=${RABBITMQ_DEFAULT_HOST}
+      - QUEUE_IN_NAME=${QUEUE_IN_NAME}
+      - QUEUE_OUT_NAME=${QUEUE_OUT_NAME}
+      - EXCHANGE_NAME=${EXCHANGE_NAME}
+      - ROUTING_KEY_IN=${ROUTING_KEY_IN}
+      - ROUTING_KEY_OUT=${ROUTING_KEY_OUT}
+      - QUEUE_AUDIO_IN_NAME=${QUEUE_AUDIO_IN_NAME}
+      - QUEUE_AUDIO_OUT_NAME=${QUEUE_AUDIO_OUT_NAME}
+      - EXCHANGE_AUDIO_NAME=${EXCHANGE_AUDIO_NAME}
+      - ROUTING_KEY_AUDIO_IN=${ROUTING_KEY_AUDIO_IN}
+      - ROUTING_KEY_AUDIO_OUT=${ROUTING_KEY_AUDIO_OUT}
+      - QUEUE_VIDEO_IN_NAME=${QUEUE_VIDEO_IN_NAME}
+      - QUEUE_VIDEO_OUT_NAME=${QUEUE_VIDEO_OUT_NAME}
+      - EXCHANGE_VIDEO_NAME=${EXCHANGE_VIDEO_NAME}
+      - ROUTING_KEY_VIDEO_IN=${ROUTING_KEY_VIDEO_IN}
+      - ROUTING_KEY_VIDEO_OUT=${ROUTING_KEY_VIDEO_OUT}
+      - MODEL_SIZE=${MODEL_SIZE}
+      - DEVICE=${DEVICE}
+      - COMPUTE_TYPE=${COMPUTE_TYPE}
+      - BEAM_SIZE=${BEAM_SIZE}
+      - STORAGE_PATH=/storage
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              capabilities: [gpu]
+              count: all
+  audio-generation:
+    build: audio-generation/
+    volumes:
+      - ./volumes/server:/storage
+    depends_on:
+      - rabbitmq
+    environment:
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS}
+      - RABBITMQ_DEFAULT_HOST=${RABBITMQ_DEFAULT_HOST}
+      - QUEUE_IN_NAME=${QUEUE_AUDIO_IN_NAME}
+      - QUEUE_OUT_NAME=${QUEUE_AUDIO_OUT_NAME}
+      - EXCHANGE_NAME=${EXCHANGE_AUDIO_NAME}
+      - ROUTING_KEY_IN=${ROUTING_KEY_AUDIO_IN}
+      - ROUTING_KEY_OUT=${ROUTING_KEY_AUDIO_OUT}
+      - STORAGE_PATH=/storage
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              capabilities: [gpu]
+              count: all
+  video-generation:
+    build: video-generation/
+    volumes:
+      - ./volumes/server:/storage
+    depends_on:
+      - rabbitmq
+    environment:
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS}
+      - RABBITMQ_DEFAULT_HOST=${RABBITMQ_DEFAULT_HOST}
+      - QUEUE_IN_NAME=${QUEUE_VIDEO_IN_NAME}
+      - QUEUE_OUT_NAME=${QUEUE_VIDEO_OUT_NAME}
+      - EXCHANGE_NAME=${EXCHANGE_VIDEO_NAME}
+      - ROUTING_KEY_IN=${ROUTING_KEY_VIDEO_IN}
+      - ROUTING_KEY_OUT=${ROUTING_KEY_VIDEO_OUT}
+      - STORAGE_PATH=/storage
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              capabilities: [gpu]
+              count: all
+  server:
+    build: backend/
+    volumes:
+      - ./volumes/server:/storage
+    depends_on:
+      - liquibase
+      - db
+      - transcription
+    ports:
+      - 8082:8080
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - RABBITMQ_DEFAULT_HOST=${RABBITMQ_DEFAULT_HOST}
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS}
+      - QUEUE_IN_NAME=${QUEUE_IN_NAME}
+      - QUEUE_OUT_NAME=${QUEUE_OUT_NAME}
+      - EXCHANGE_NAME=${EXCHANGE_NAME}
+      - ROUTING_KEY_IN=${ROUTING_KEY_IN}
+      - ROUTING_KEY_OUT=${ROUTING_KEY_OUT}
+      - EXCHANGE_AUDIO_NAME=${EXCHANGE_AUDIO_NAME}
+      - QUEUE_AUDIO_IN_NAME=${QUEUE_AUDIO_IN_NAME}
+      - ROUTING_KEY_AUDIO_IN=${ROUTING_KEY_AUDIO_IN}
+      - QUEUE_AUDIO_OUT_NAME=${QUEUE_AUDIO_OUT_NAME}
+      - ROUTING_KEY_AUDIO_OUT=${ROUTING_KEY_AUDIO_OUT}
+      - EXCHANGE_VIDEO_NAME=${EXCHANGE_VIDEO_NAME}
+      - QUEUE_VIDEO_IN_NAME=${QUEUE_VIDEO_IN_NAME}
+      - ROUTING_KEY_VIDEO_IN=${ROUTING_KEY_VIDEO_IN}
+      - QUEUE_VIDEO_OUT_NAME=${QUEUE_VIDEO_OUT_NAME}
+      - ROUTING_KEY_VIDEO_OUT=${ROUTING_KEY_VIDEO_OUT}
+  callback:
+    build: caller-log/
+    depends_on:
+      - liquibase
+      - db
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+  scheduler:
+    build: scheduler/
+    depends_on:
+      - rabbitmq
+      - callback
+    environment:
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS}
+      - RABBITMQ_DEFAULT_HOST=${RABBITMQ_DEFAULT_HOST}
+      - UPLOADER_QUEUE=${UPLOADER_QUEUE}
+      - UPLOADER_ROUTING_KEY=${UPLOADER_ROUTING_KEY}
+      - UPLOADER_EXCHANGE=${UPLOADER_EXCHANGE}
+  gateway:
+    build: gateway/
+    ports:
+      - 8090:8090
+    depends_on:
+      - server
+    environment:
+      - OPERATOR_PASSWORD=${OPERATOR_PASSWORD}
+  gsheets:
+    build: gsheets-poster-service/
+    volumes:
+      - ./volumes/sheets:/gsheets
+    depends_on:
+      - rabbitmq
+      - callback
+      - server
+    environment:
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS}
+      - RABBITMQ_DEFAULT_HOST=${RABBITMQ_DEFAULT_HOST}
+      - UPLOADER_QUEUE=${UPLOADER_QUEUE}
+      - UPLOADER_ROUTING_KEY=${UPLOADER_ROUTING_KEY}
+      - UPLOADER_EXCHANGE=${UPLOADER_EXCHANGE}
+      - GOOGLE_SERVICE_ACCOUNT=${GOOGLE_SERVICE_ACCOUNT}
+      - SPREADSHEET_ID=${SPREADSHEET_ID}

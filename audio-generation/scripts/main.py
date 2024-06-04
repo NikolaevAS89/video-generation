@@ -42,6 +42,7 @@ def callback(ch, method, properties, body):
         source = body.decode("utf-8")
         logger.info(f"Message:{str(source)}")
         request = json.loads(source)
+        print(request)
         answer = {
             "processedId": request.get('processedId', "Undefined"),
             "status": "Audio is generating",
