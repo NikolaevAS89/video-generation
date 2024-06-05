@@ -117,7 +117,6 @@ class AudioService:
                                                                                     task_uuid=processedId)
         generated_root_dir = self._storage_path_service_.get_generated_directory(uuid=templateId,
                                                                                  task_uuid=processedId)
-        # os.popen(f'mkdir {generated_root_dir} & cp {original_audio_path} {generated_audio_path}')  # TODO make real generation
 
         os.makedirs(generated_root_dir, exist_ok=True)
 
@@ -133,7 +132,6 @@ class AudioService:
                 replacement_text = replacements[group_name]
                 text_to_generate += replacement_text
                 
-                # Skip over all words in the current group
                 while i < len(chosen) and chosen[i] == group_num:
                     i += 1
         

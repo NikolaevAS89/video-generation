@@ -1,6 +1,5 @@
 import logging
 import os
-import time
 from sys import stdout
 from Wav2Lip.video_processor import VideoProcessor
 from GFPGAN.video_postprocessor import VideoPostProcessor
@@ -60,8 +59,6 @@ class VideoService:
     def __init__(self, storage_path_service: StoragePathService):
         self._storage_path_service_ = storage_path_service
         self.temp_path = '/temp'
-        # self.video_processor = VideoProcessor(checkpoint_path='./Wav2Lip/wav2lip.pth', temp_path=self.temp_path)
-        # self.video_postprocessor = VideoPostProcessor(temp_path=self.temp_path)
         self.video_processor = VideoProcessor(checkpoint_path='./Wav2Lip/wav2lip.pth')
         self.video_postprocessor = VideoPostProcessor()
 
@@ -90,23 +87,20 @@ class VideoService:
         generated_video_path = self._storage_path_service_.get_generated_video_path(uuid=templateId, task_uuid=processedId)
         logger.info(generated_video_path)
 
-        # # Ensure directories exist
-        # os.makedirs(generated_video_path, exist_ok=True)
 
-        # Define paths
-        # result_video_path = os.path.join(generated_video_path, 'result_voice.mp4')
+        logger.info('Processing video')
 
-        # Call the video processing method
+        try:
+            self.video_processor.process_video(
+                face_path=original_video_path,
+                audio_path=generated_audio_path,
+                outfile=temp_dir_path + f'/video_generated_raw.mp4',
+                output_path=temp_dir_path
+            )
+        except BaseException as e:
+            logger.error(e)
 
-        logger.info('processing video')
-        self.video_processor.process_video(
-            face_path=original_video_path,
-            audio_path=generated_audio_path,
-            # outfile=result_video_path
-            # outfile=generated_video_path,
-            outfile=temp_dir_path + f'/video_generated_raw.mp4',
-            output_path=temp_dir_path
-        )
+        logger.info('Post-processing video')
 
         self.video_postprocessor.process(
             video_path=temp_dir_path + f'/video_generated_raw.mp4',
@@ -120,12 +114,3 @@ class VideoService:
             "status": "Success",
             "message": "The video has been generated."
         }
-    
-
-# storage_path_service = StoragePathService('./storage')
-
-# video_service = VideoService(storage_path_service)
-# video_service.generate_video(
-#     'test_uuid',
-#     'test_process_uuid'
-# )

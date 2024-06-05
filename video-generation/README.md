@@ -1,5 +1,3 @@
 Для правильной работы необходимо:
-1. добавить список необходимых библиотек в requirements.txt
-2. при необходимости изменить базовый образ в Dockerfile
-3. реализовать генерацию в service.VideoService.generate_video
-4. изменить в docker-compose.yml при необходимости переменные окружения
+1. Скопировать:
+    video-generation/scripts/Wav2Lip/wav2lip.pth

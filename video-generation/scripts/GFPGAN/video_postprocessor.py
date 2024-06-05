@@ -108,13 +108,6 @@ class VideoPostProcessor:
             url = 'https://github.com/TencentARC/GFPGAN/releases/download/v1.3.4/RestoreFormer.pth'
         else:
             raise ValueError(f'Wrong model version {version}.')
-        
-        # model_path = os.path.join('experiments/pretrained_models', model_name + '.pth')
-        # if not os.path.isfile(model_path):
-        #     model_path = os.path.join('gfpgan/weights', model_name + '.pth')
-        # if not os.path.isfile(model_path):
-        #     # download pre-trained models from url
-        #     model_path = url
 
         model_path = os.path.join(self.models_backup_dir, url.split('/')[-1])
         self.download_file(url, model_path)
@@ -170,24 +163,16 @@ class VideoPostProcessor:
         logger.info('Process start')
 
         # Step 1: Convert video to images
-        whole_image_dir = os.path.join(output_path, '/whole_imgs')
+        whole_image_dir = output_path + '/whole_imgs'
         self.video_to_images(video_path, whole_image_dir)
 
         # Step 2: Enhance images
-        enhanced_image_dir = os.path.join(output_path, '/restored_imgs')
+        enhanced_image_dir = output_path + '/restored_imgs'
         self.enhance_images(whole_image_dir, enhanced_image_dir)
 
         # Step 3: Combine images back into video with audio
-        video_path_output = os.path.join(output_path, '/video.avi')
+        video_path_output = output_path + '/video.avi'
         self.images_to_video(enhanced_image_dir, video_path_output)
 
         self.final_result(audio_path, video_path_output, outfile)
-
-# Usage example
-# if __name__ == '__main__':
-#     temp_path = os.getenv("temp_path")
-#     video_path = os.path.join(temp_path, 'GFPGAN/001.mp4')
-#     audio_path = os.path.join(temp_path, 'GFPGAN/dud.wav')
-
-#     processor = VideoPostProcessor(temp_path)
-#     processor.process(video_path, audio_path)
+        

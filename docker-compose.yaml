@@ -95,6 +95,7 @@ services:
     build: video-generation/
     volumes:
       - ./volumes/server:/storage
+      - ./volumes/temp:/temp
     depends_on:
       - rabbitmq
     environment:
