@@ -100,4 +100,3 @@ if __name__ == '__main__':
                 channel.start_consuming()
         except Exception as e:
             logger.error(f"{str(e)}")
-            time.sleep(15)
