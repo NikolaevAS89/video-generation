@@ -57,7 +57,6 @@ class SecurityConfiguration {
         String name = basicAuthProperties.getName();
         String password = basicAuthProperties.getPassword();
         String encoded_password =  encoder.encode(password);
-        LOGGER.info("#### ({}/{}) -> {} ####", name, password, encoded_password); // TODO delete or change!
         UserDetails user = User.builder()
                 .username(name)
                 .password(encoded_password)
