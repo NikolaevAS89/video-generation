@@ -1,5 +1,6 @@
 #CUDA Dependencies
-
+TTS==0.22.0
+torchaudio==2.3.0
 # Modules
 requests==2.31.0
 pika==1.3.2

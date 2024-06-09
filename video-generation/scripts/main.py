@@ -32,7 +32,7 @@ root_storage_path = str(os.getenv("STORAGE_PATH"))
 
 # Init
 storage_path_service = StoragePathService(root_path=root_storage_path)
-audio_service = VideoService(storage_path_service=storage_path_service)
+video_service = VideoService(storage_path_service=storage_path_service)
 credentials = pika.credentials.PlainCredentials(username=username,
                                                 password=password)
 
@@ -51,8 +51,9 @@ def callback(ch, method, properties, body):
                          routing_key=routing_key_out,
                          body=json.dumps(answer).encode("UTF-8"))
         try:
-            answer = audio_service.generate_video(**request)
+            answer = video_service.generate_video(**request)
         except Exception as e:
+            logger.error(e)
             answer = {
                 "processedId": request.get('processedId', "Undefined"),
                 "status": "Error",
@@ -99,4 +100,4 @@ if __name__ == '__main__':
                 channel.start_consuming()
         except Exception as e:
             logger.error(f"{str(e)}")
-            time.sleep(15)  # TODO need to be reviewed
+            time.sleep(15)
