@@ -1,7 +1,7 @@
 version: "3.8"
 services:
   rabbitmq:
-    image: huecker.io/library/rabbitmq:3.12.6-management-alpine
+    image: rabbitmq:3.12.6-management-alpine
     hostname: rabbitmq
     restart: always
     environment:
@@ -13,7 +13,7 @@ services:
     ports:
       - 15672:15672
   db:
-    image: huecker.io/library/postgres:14.1-alpine
+    image: postgres:14.1-alpine
     restart: always
     environment:
       - POSTGRES_DB=${POSTGRES_DB}
