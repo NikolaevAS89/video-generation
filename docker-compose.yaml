@@ -10,6 +10,8 @@ services:
       - RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS=${RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS}
     volumes:
       - ./volumes/rabbitmq:/var/lib/rabbitmq
+    ports:
+      - 15672:15672
   db:
     image: postgres:14.1-alpine
     restart: always
@@ -19,6 +21,8 @@ services:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     volumes:
       - ./volumes/db:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
   liquibase:
     build: liquibase/
     depends_on:
@@ -119,6 +123,8 @@ services:
       - liquibase
       - db
       - transcription
+    ports:
+      - 8082:8080
     environment:
       - POSTGRES_DB=${POSTGRES_DB}
       - POSTGRES_USER=${POSTGRES_USER}
