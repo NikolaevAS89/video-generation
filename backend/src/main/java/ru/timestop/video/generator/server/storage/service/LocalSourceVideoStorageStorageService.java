@@ -74,6 +74,6 @@ public class LocalSourceVideoStorageStorageService implements SourceVideoStorage
     }
 
     private static File getFileName(UUID template_uuid, UUID request_uuid) {
-        return new File(FOLDER + "/" + template_uuid.toString() + "/"+ request_uuid.toString()+"/video_generated");
+        return new File(FOLDER + "/" + template_uuid.toString() + "/"+ request_uuid.toString()+"/video_generated.mp4");
     }
 }
