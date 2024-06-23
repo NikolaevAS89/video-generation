@@ -84,10 +84,18 @@ services:
       - ROUTING_KEY_IN=${ROUTING_KEY_AUDIO_IN}
       - ROUTING_KEY_OUT=${ROUTING_KEY_AUDIO_OUT}
       - STORAGE_PATH=/storage
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              capabilities: [gpu]
+              count: all
   video-generation:
     build: video-generation/
     volumes:
       - ./volumes/server:/storage
+      - ./volumes/temp:/temp
     depends_on:
       - rabbitmq
     environment:
@@ -100,6 +108,13 @@ services:
       - ROUTING_KEY_IN=${ROUTING_KEY_VIDEO_IN}
       - ROUTING_KEY_OUT=${ROUTING_KEY_VIDEO_OUT}
       - STORAGE_PATH=/storage
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              capabilities: [gpu]
+              count: all
   server:
     build: backend/
     volumes:

@@ -1,8 +1,10 @@
+import functools
 import json
 import logging
 import os
 import time
 from sys import stdout
+from threading import Thread
 
 import pika
 from pika.exchange_type import ExchangeType
@@ -48,9 +50,30 @@ credentials = pika.credentials.PlainCredentials(username=username,
                                                 password=password)
 
 
-def callback(ch, method, properties, body):
+def run_ml(uuid: str, answers: list):
+    try:
+        media_service.split_source(uuid=uuid)
+        answer = transcription_service.generate_subs(uuid=uuid)
+    except Exception as e:
+        logger.error(e)
+        answer = {
+            "uuid": uuid,
+            "status": "Error",
+            "message": "An error while an audio transcribing.",
+            "words": []
+        }
+    answers.append(answer)
+
+
+def callback(ch, method, properties, body, threads: list, answers: list):
     try:
         uuid = body.decode("utf-8")
+        logger.info(f"uuid:{str(uuid)}")
+        # run ml
+        thread = Thread(target=run_ml, args=(uuid, answers))
+        thread.start()
+        threads.append(thread)
+        # send status
         answer = {
             "uuid": uuid,
             "status": "Transcribing",
@@ -60,27 +83,17 @@ def callback(ch, method, properties, body):
         ch.basic_publish(exchange=exchange_name,
                          routing_key=routing_key_out,
                          body=json.dumps(answer).encode("UTF-8"))
-        media_service.split_source(uuid=uuid)
-        try:
-            answer = transcription_service.generate_subs(uuid=uuid)
-        except Exception as e:
-            answer = {
-                "uuid": uuid,
-                "status": "Error",
-                "message": "An error while an audio transcribing.",
-                "words": []
-            }
-        ch.basic_publish(exchange=exchange_name,
-                         routing_key=routing_key_out,
-                         body=json.dumps(answer).encode("UTF-8"))
+        if ch.is_open:
+            ch.basic_ack()
+            ch.stop_consuming()
     except Exception as e:
-        logger.error(str(e))
+        logger.error(e)
 
 
-if __name__ == '__main__':
+def consume(threads: list, answers: list):
     channel = None
     connection = None
-    while True:
+    while len(threads) <= 0:
         try:
             if connection is None or connection.is_closed:
                 logger.info('Make new connection')
@@ -98,17 +111,62 @@ if __name__ == '__main__':
                 channel.queue_bind(exchange=exchange_name,
                                    queue=queue_in_name,
                                    routing_key=routing_key_in)
+                kvargs = {
+                    "threads": threads,
+                    "answers": answers
+                }
+                on_message_callback = functools.partial(callback, **kvargs)
+                channel.basic_consume(queue=queue_in_name,
+                                      on_message_callback=on_message_callback)
+            else:
+                logger.info('Waiting for messages. To exit press CTRL+C')
+                channel.start_consuming()
+        except Exception as e:
+            logger.error(f"{str(e)}")
+    connection.close()
+
+
+def answer(answers: list):
+    channel = None
+    connection = None
+    while len(answers) > 0:
+        try:
+            if connection is None or connection.is_closed:
+                logger.info('Make new connection')
+                connection = pika.BlockingConnection(pika.ConnectionParameters(host=rabbit_host,
+                                                                               credentials=credentials))
+            elif channel is None or channel.is_closed:
+                logger.info('Make new channel')
+                channel = connection.channel()
+                channel.exchange_declare(exchange=exchange_name,
+                                         durable=True,
+                                         auto_delete=False,
+                                         exchange_type=ExchangeType.direct)
                 channel.queue_declare(queue=queue_out_name,
                                       durable=True)
                 channel.queue_bind(exchange=exchange_name,
                                    queue=queue_out_name,
                                    routing_key=routing_key_out)
-                channel.basic_consume(queue=queue_in_name,
-                                      auto_ack=True,
-                                      on_message_callback=callback)
             else:
-                logger.info('Waiting for messages. To exit press CTRL+C')
-                channel.start_consuming()
+                answer = answers.pop(0)
+                channel.basic_publish(exchange=exchange_name,
+                                      routing_key=routing_key_out,
+                                      body=json.dumps(answer).encode("UTF-8"))
+        except Exception as e:
+            logger.error(f"{str(e)}")
+    connection.close()
+
+
+if __name__ == '__main__':
+    threads = list()
+    answers = list()
+    while True:
+        try:
+            consume(threads=threads, answers=answers)
+            for thread in threads:
+                thread.join()
+            threads = list()
+            answer(answers=answers)
         except Exception as e:
             logger.error(f"{str(e)}")
             time.sleep(15)  # TODO need to be reviewed
