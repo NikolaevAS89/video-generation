@@ -104,6 +104,7 @@ def consume(threads: list, answers: list):
                 }
                 on_message_callback = functools.partial(callback, **kvargs)
                 channel.basic_consume(queue=queue_in_name,
+                                      auto_ack=True,
                                       on_message_callback=on_message_callback)
             else:
                 logger.info('Waiting for messages. To exit press CTRL+C')
