@@ -133,6 +133,7 @@ def consume(requests: list, answers: list):
                 channel.start_consuming()
         except Exception as e:
             logger.error(f"{str(e)}")
+            time.sleep(15)  # to wait an up of rabbit
     connection.close()
 
 
